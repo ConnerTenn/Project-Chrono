@@ -2,7 +2,7 @@ package main
 
 import (
 	"bufio"
-  "fmt"
+	"fmt"
 	"os"
 )
 
@@ -18,8 +18,8 @@ const (
 	RParen
 	LCurly
 	RCurly
-  Comma
-  Asmt
+	Comma
+	Asmt
 )
 
 type Token struct {
@@ -30,7 +30,7 @@ type Token struct {
 
 // stringer interface
 func (t Token) String() string {
-  return fmt.Sprintf("%v: %s at %d:%d", t.Type, t.Value, t.Pos[0], t.Pos[1])
+	return fmt.Sprintf("%v: %s at %d:%d", t.Type, t.Value, t.Pos[0], t.Pos[1])
 }
 
 // could be done functionally :)
@@ -41,98 +41,115 @@ type Lexer struct {
 }
 
 func (lex Lexer) StartLexing(fileName string) error {
-  var err error // throws non-name on left side error (for lex.file) when using := operator
+	var err error // throws non-name on left side error (for lex.file) when using := operator
 	lex.file, err = os.Open(fileName)
 	if err != nil {
 		return err
 	}
 
-  //lex.Tokens = make(chan Token, 20)
+	//lex.Tokens = make(chan Token, 20)
 
-  go lex.tokenizer()
+	go lex.tokenizer()
 
 	return nil
 }
 
 func (lex Lexer) tokenizer() {
-  reader := bufio.NewReader(lex.file)
+	reader := bufio.NewReader(lex.file)
 
-  defer lex.file.Close()
+	defer lex.file.Close()
 
-  pos := [2]int{1,1} // position / head tracker for error reporting
+	pos := [2]int{1, 1} // position / head tracker for error reporting
 
-  // check if valid begining using Rune / Unicode values
-  checkVal := func(val rune) bool {
-    return (val >= 48 && val <= 57) || // >= 0 && <= 9
-       (val >= 65 && val <= 90) || // >= A && <= Z
-       (val >= 97 && val <= 122) || // >= a && <= z
-       val == 95 // == _
-  }
+	// check if valid begining using Rune / Unicode values
+	checkVal := func(val rune) bool {
+		return (val >= 48 && val <= 57) || // >= 0 && <= 9
+			(val >= 65 && val <= 90) || // >= A && <= Z
+			(val >= 97 && val <= 122) || // >= a && <= z
+			val == 95 // == _
+	}
 
-  for true {
-    var charAdd int = 1
-    var val string = ""
-    newRune, _, err := reader.ReadRune()
-    if err != nil {
-      fmt.Println(err) // temp
-      // todo: check for EOF and quietly exit, else raise error
-      break
-    }
-    val += string(newRune)
+	for true {
+		var charAdd int = 1
+		var val string = ""
+		newRune, _, err := reader.ReadRune()
+		if err != nil {
+			fmt.Println(err) // temp
+			// todo: check for EOF and quietly exit, else raise error
+			break
+		}
+		val += string(newRune)
 
-    var t TokenType
+		var t TokenType
 
-    // if keyword, iden, or literal, find the full length
-    if checkVal(rune(val[0])) {
-      // inner scan to get full keyword/iden/literal
-      for true {
-        nextVal, err := reader.Peek(1)
-        if err != nil {
-          fmt.Println(err) // temp
-          break
-        }
+		// if keyword, iden, or literal, find the full length
+		if checkVal(rune(val[0])) {
+			// inner scan to get full keyword/iden/literal
+			for true {
+				nextVal, err := reader.Peek(1)
+				if err != nil {
+					fmt.Println(err) // temp
+					break
+				}
 
-        if !checkVal(rune(nextVal[0])) {
-          break
-        }
+				if !checkVal(rune(nextVal[0])) {
+					break
+				}
 
-        newRune, _, err := reader.ReadRune()
-        if err != nil {
-          fmt.Println(err) // temp
-          // todo: check for EOF and quietly exit, else raise error
-          break
-        }
+				newRune, _, err := reader.ReadRune()
+				if err != nil {
+					fmt.Println(err) // temp
+					// todo: check for EOF and quietly exit, else raise error
+					break
+				}
 
-        val += string(newRune)
-        charAdd++
-      }
-    }
+				val += string(newRune)
+				charAdd++
+			}
+		}
 
-    // keywords tokenizing
+		// keywords tokenizing
 
-    // iden tokenizing
+		// iden tokenizing
 
-    // literals tokenizing
+		// literals tokenizing
 
-    // multi char tokenizing
+		// multi char tokenizing
 
-    // single char tokenizing
-    switch val {
-      case " ": {pos[1]+=1; continue} // ignore spaces
-      case "\n": {pos[0]+=1; pos[1]=1; continue} // ignore new lines
-      case "\r": continue // ignore carriage returns (don't need to count for position tracking, always bundled with new line)
-      case ",": t = Comma
-      case "{": t = LCurly
-      case "}": t = RCurly
-      case "(": t = LParen
-      case ")": t = RParen
-      case ";": t = EOL
-      case "=": t = Asmt
-    }
+		// single char tokenizing
+		switch val {
+		case " ":
+			{
+				pos[1] += 1
+				continue
+			} // ignore spaces
+		case "\n":
+			{
+				pos[0] += 1
+				pos[1] = 1
+				continue
+			} // ignore new lines
+		case "\r":
+			continue // ignore carriage returns (don't need to count for position tracking, always bundled with new line)
+		case ",":
+			t = Comma
+		case "{":
+			t = LCurly
+		case "}":
+			t = RCurly
+		case "(":
+			t = LParen
+		case ")":
+			t = RParen
+		case ";":
+			t = EOL
+		case "=":
+			t = Asmt
+		}
 
-    lex.Tokens <- Token{t, val, pos}
-    pos[1]+=charAdd;
-  }
+		lex.Tokens <- Token{t, val, pos}
+		pos[1] += charAdd
+	}
 
-  close(lex.Tokens)
+	close(lex.Tokens)
 }
