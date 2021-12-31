@@ -19,6 +19,7 @@ const (
 	LCurly
 	RCurly
   Comma
+  Asmt
 )
 
 type Token struct {
@@ -54,15 +55,66 @@ func (lex Lexer) StartLexing(fileName string) error {
 }
 
 func (lex Lexer) tokenizer() {
-  scanner := bufio.NewScanner(lex.file)
-  scanner.Split(bufio.ScanRunes)
+  reader := bufio.NewReader(lex.file)
+
+  defer lex.file.Close()
 
   pos := [2]int{1,1} // position / head tracker for error reporting
 
-  for scanner.Scan() {
+  // check if valid begining using Rune / Unicode values
+  checkVal := func(val rune) bool {
+    return (val >= 48 && val <= 57) || // >= 0 && <= 9
+       (val >= 65 && val <= 90) || // >= A && <= Z
+       (val >= 97 && val <= 122) || // >= a && <= z
+       val == 95 // == _
+  }
+
+  for true {
+    var charAdd int = 1
+    var val string = ""
+    newRune, _, err := reader.ReadRune()
+    if err != nil {
+      fmt.Println(err) // temp
+      // todo: check for EOF and quietly exit, else raise error
+      break
+    }
+    val += string(newRune)
+
     var t TokenType
-    val := scanner.Text()
-    // currently only deal with single char tokens
+
+    // if keyword, iden, or literal, find the full length
+    if checkVal(rune(val[0])) {
+      // inner scan to get full keyword/iden/literal
+      for true {
+        nextVal, err := reader.Peek(1)
+        if err != nil {
+          fmt.Println(err) // temp
+          break
+        }
+
+        if !checkVal(rune(nextVal[0])) {
+          break
+        }
+
+        newRune, _, err := reader.ReadRune()
+        if err != nil {
+          fmt.Println(err) // temp
+          // todo: check for EOF and quietly exit, else raise error
+          break
+        }
+
+        val += string(newRune)
+        charAdd++
+      }
+    }
+
+    // keywords tokenizing
+
+    // iden tokenizing
+
+    // literals tokenizing
+
+    // multi char tokenizing
 
     // single char tokenizing
     switch val {
@@ -75,10 +127,11 @@ func (lex Lexer) tokenizer() {
       case "(": t = LParen
       case ")": t = RParen
       case ";": t = EOL
+      case "=": t = Asmt
     }
 
     lex.Tokens <- Token{t, val, pos}
-    pos[1]+=1;
+    pos[1]+=charAdd;
   }
 
   close(lex.Tokens)
