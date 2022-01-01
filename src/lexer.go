@@ -112,8 +112,9 @@ func (lex Lexer) tokenizer() {
 		for buildVal := true; buildVal; buildVal = MultiToken(firstRune, nextRune) {
 			newRune, _, err := reader.ReadRune()
 			if err != nil {
-				fmt.Println(err) // temp
-				// todo: check for EOF and quietly exit, else raise error
+				if err.Error() != "EOF" {
+					fmt.Println("Error:", err) // temp
+				}
 				return
 			}
 			val += string(newRune)
@@ -121,7 +122,9 @@ func (lex Lexer) tokenizer() {
 
 			nextVal, err := reader.Peek(1)
 			if err != nil {
-				fmt.Println(err) // temp
+				if err.Error() != "EOF" {
+					fmt.Println("Error:", err) // temp
+				}
 				break
 			}
 
