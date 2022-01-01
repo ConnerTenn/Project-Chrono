@@ -74,8 +74,7 @@ func (lex Lexer) tokenizer() {
 		return (val >= '0' && val <= '9') || // test if number
 			(val >= 'A' && val <= 'Z') || // test if uppercase character
 			(val >= 'a' && val <= 'z') || // test if lowercase character
-			val == '_' || // test if underscore
-			val == '-' // test for negatives
+			val == '_' // test if underscore
 	}
 
 	for true {
@@ -94,8 +93,7 @@ func (lex Lexer) tokenizer() {
 		// if keyword, iden, or literal, find the full length
 		if checkVal(rune(val[0])) {
 			// inner scan to get full keyword/iden/literal
-			for i := 0; true; i++ {
-				curVal := val[i]
+			for true {
 				nextVal, err := reader.Peek(1)
 				if err != nil {
 					fmt.Println(err) // temp
@@ -103,11 +101,6 @@ func (lex Lexer) tokenizer() {
 				}
 
 				if !checkVal(rune(nextVal[0])) {
-					break
-				}
-
-				// check if not negative literal
-				if curVal == '-' && !(nextVal[0] >= '0' && nextVal[0] <= '9') {
 					break
 				}
 
@@ -134,7 +127,7 @@ func (lex Lexer) tokenizer() {
 		}
 
 		// literals tokenizing
-		if (val[0] >= '0' && val[0] <= '9') || (val[0] == '-' && len(val) > 1) {
+		if val[0] >= '0' && val[0] <= '9' {
 			t = Literal
 		}
 
