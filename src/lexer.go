@@ -21,6 +21,7 @@ const (
 	RCurly
 	Comma
 	Asmt
+	Cmp
 )
 
 type Token struct {
@@ -138,8 +139,28 @@ func (lex Lexer) tokenizer() {
 		}
 
 		// multi char tokenizing
+		if val[0] >= '<' || val[0] <= '>' {
+			nextVal, err := reader.Peek(1)
+			if err != nil {
+				fmt.Println(err) // temp
+				break
+			}
 
-		// single char tokenizing
+			if nextVal[0] >= '<' || nextVal[0] <= '>' {
+
+				newRune, _, err := reader.ReadRune()
+				if err != nil {
+					fmt.Println(err) // temp
+					// todo: check for EOF and quietly exit, else raise error
+					break
+				}
+
+				val += string(newRune)
+				charAdd++
+			}
+		}
+
+		// single & multi char tokenizing
 		switch val {
 		case " ":
 			{
@@ -168,6 +189,12 @@ func (lex Lexer) tokenizer() {
 			t = EOL
 		case "=":
 			t = Asmt
+		case "==":
+			t = Cmp
+		case ">=":
+			t = Cmp
+		case "<=":
+			t = Cmp
 		}
 
 		lex.Tokens <- Token{t, val, pos}
