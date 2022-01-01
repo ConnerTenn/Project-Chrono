@@ -2,5 +2,5 @@ FirstExample(
     in Clk,
     out Constant)
 {
-    Constant = 1;
+    Constant = -1_00;
 }
