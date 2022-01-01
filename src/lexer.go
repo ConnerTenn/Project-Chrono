@@ -63,10 +63,10 @@ func (lex Lexer) tokenizer() {
 
 	// check if valid begining using Rune / Unicode values
 	checkVal := func(val rune) bool {
-		return (val >= 48 && val <= 57) || // >= 0 && <= 9
-			(val >= 65 && val <= 90) || // >= A && <= Z
-			(val >= 97 && val <= 122) || // >= a && <= z
-			val == 95 // == _
+		return (val >= '0' && val <= '9') || // test if number
+			(val >= 'A' && val <= 'Z') || // test if uppercase character
+			(val >= 'a' && val <= 'z') || // test if lowercase character
+			val == '_' // test if underscore
 	}
 
 	for true {
