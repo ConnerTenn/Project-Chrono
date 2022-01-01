@@ -62,13 +62,7 @@ func (lex Lexer) StartLexing(fileName string) error {
 	return nil
 }
 
-func (lex Lexer) tokenizer() {
-	reader := bufio.NewReader(lex.file)
-
-	defer lex.file.Close()
-
-	pos := [2]int{1, 1} // position / head tracker for error reporting
-
+func MultiToken(first rune, next rune) bool {
 	// check if valid begining using Rune / Unicode values
 	checkVal := func(val rune) bool {
 		return (val >= '0' && val <= '9') || // test if number
@@ -77,44 +71,65 @@ func (lex Lexer) tokenizer() {
 			val == '_' // test if underscore
 	}
 
+	checkCmp := func(val rune) bool {
+		return (val == '<' || val == '=' || val == '>')
+	}
+
+	if checkVal(first) && checkVal(next) {
+		return true
+	}
+
+	if checkCmp(first) && checkCmp(next) {
+		return true
+	}
+
+	return false
+}
+
+func (lex Lexer) tokenizer() {
+	reader := bufio.NewReader(lex.file)
+
+	defer lex.file.Close()
+	defer close(lex.Tokens)
+
+	pos := [2]int{1, 1} // position / head tracker for error reporting
+
+	// // check if valid begining using Rune / Unicode values
+	// checkVal := func(val rune) bool {
+	// 	return (val >= '0' && val <= '9') || // test if number
+	// 		(val >= 'A' && val <= 'Z') || // test if uppercase character
+	// 		(val >= 'a' && val <= 'z') || // test if lowercase character
+	// 		val == '_' // test if underscore
+	// }
+
 	for true {
 		var charAdd int = 1
 		var val string = ""
-		newRune, _, err := reader.ReadRune()
-		if err != nil {
-			fmt.Println(err) // temp
-			// todo: check for EOF and quietly exit, else raise error
-			break
+
+		var nextRune rune
+		var firstRune rune
+
+		for buildVal := true; buildVal; buildVal = MultiToken(firstRune, nextRune) {
+			newRune, _, err := reader.ReadRune()
+			if err != nil {
+				fmt.Println(err) // temp
+				// todo: check for EOF and quietly exit, else raise error
+				return
+			}
+			val += string(newRune)
+			charAdd++
+
+			nextVal, err := reader.Peek(1)
+			if err != nil {
+				fmt.Println(err) // temp
+				break
+			}
+
+			firstRune = rune(val[0])
+			nextRune = rune(nextVal[0])
 		}
-		val += string(newRune)
 
 		var t TokenType
-
-		// if keyword, iden, or literal, find the full length
-		if checkVal(rune(val[0])) {
-			// inner scan to get full keyword/iden/literal
-			for true {
-				nextVal, err := reader.Peek(1)
-				if err != nil {
-					fmt.Println(err) // temp
-					break
-				}
-
-				if !checkVal(rune(nextVal[0])) {
-					break
-				}
-
-				newRune, _, err := reader.ReadRune()
-				if err != nil {
-					fmt.Println(err) // temp
-					// todo: check for EOF and quietly exit, else raise error
-					break
-				}
-
-				val += string(newRune)
-				charAdd++
-			}
-		}
 
 		// keywords tokenizing
 		if keyType, ok := keywordMap[val]; ok { // if val is in keyword map
@@ -129,28 +144,6 @@ func (lex Lexer) tokenizer() {
 		// literals tokenizing
 		if val[0] >= '0' && val[0] <= '9' {
 			t = Literal
-		}
-
-		// multi char tokenizing
-		if val[0] >= '<' && val[0] <= '>' {
-			nextVal, err := reader.Peek(1)
-			if err != nil {
-				fmt.Println(err) // temp
-				break
-			}
-
-			if nextVal[0] >= '<' && nextVal[0] <= '>' {
-
-				newRune, _, err := reader.ReadRune()
-				if err != nil {
-					fmt.Println(err) // temp
-					// todo: check for EOF and quietly exit, else raise error
-					break
-				}
-
-				val += string(newRune)
-				charAdd++
-			}
 		}
 
 		// single & multi char tokenizing
@@ -193,6 +186,4 @@ func (lex Lexer) tokenizer() {
 		lex.Tokens <- Token{t, val, pos}
 		pos[1] += charAdd
 	}
-
-	close(lex.Tokens)
 }
