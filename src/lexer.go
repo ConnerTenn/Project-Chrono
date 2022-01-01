@@ -63,22 +63,25 @@ func (lex Lexer) StartLexing(fileName string) error {
 }
 
 func MultiToken(first rune, next rune) bool {
-	// check if valid begining using Rune / Unicode values
-	checkVal := func(val rune) bool {
+	// check if rune is part of a Name or Value
+	checkNameVal := func(val rune) bool {
 		return (val >= '0' && val <= '9') || // test if number
 			(val >= 'A' && val <= 'Z') || // test if uppercase character
 			(val >= 'a' && val <= 'z') || // test if lowercase character
 			val == '_' // test if underscore
 	}
 
+	//Check if rune is part of a comparison
 	checkCmp := func(val rune) bool {
 		return (val == '<' || val == '=' || val == '>')
 	}
 
-	if checkVal(first) && checkVal(next) {
+	//Check if this is a valid Name/Value multi token
+	if checkNameVal(first) && checkNameVal(next) {
 		return true
 	}
 
+	//Check if this is a valid Comparison multi token
 	if checkCmp(first) && checkCmp(next) {
 		return true
 	}
@@ -94,14 +97,6 @@ func (lex Lexer) tokenizer() {
 
 	pos := [2]int{1, 1} // position / head tracker for error reporting
 
-	// // check if valid begining using Rune / Unicode values
-	// checkVal := func(val rune) bool {
-	// 	return (val >= '0' && val <= '9') || // test if number
-	// 		(val >= 'A' && val <= 'Z') || // test if uppercase character
-	// 		(val >= 'a' && val <= 'z') || // test if lowercase character
-	// 		val == '_' // test if underscore
-	// }
-
 	for true {
 		var charAdd int = 1
 		var val string = ""
@@ -109,6 +104,8 @@ func (lex Lexer) tokenizer() {
 		var nextRune rune
 		var firstRune rune
 
+		//Do While type loop. Is guaranteed to execute at least once.
+		//Will continue to loop based on the MultiToken condition
 		for buildVal := true; buildVal; buildVal = MultiToken(firstRune, nextRune) {
 			newRune, _, err := reader.ReadRune()
 			if err != nil {
