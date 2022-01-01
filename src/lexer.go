@@ -10,10 +10,11 @@ import (
 type TokenType int
 
 const (
-	EOL     TokenType = iota
-	Iden              // any named identifier
-	Literal           // can be split into the different literal types during lexing
-	Signal            // input or output, probably needs a better name here
+	EOL       TokenType = iota
+	Iden                // any named identifier
+	Literal             // can be split into the different literal types during lexing
+	Direction           // signal direction, input or output
+	Keyword             // generic keyword, to be swapped out with more specific groupings (such as 'direction')
 	LParen
 	RParen
 	LCurly
@@ -31,6 +32,12 @@ type Token struct {
 // stringer interface
 func (t Token) String() string {
 	return fmt.Sprintf("%v: %s at %d:%d", t.Type, t.Value, t.Pos[0], t.Pos[1])
+}
+
+// keyword list
+var keywordMap = map[string]TokenType{
+	"in":  Direction,
+	"out": Direction,
 }
 
 // could be done functionally :)
@@ -109,10 +116,19 @@ func (lex Lexer) tokenizer() {
 		}
 
 		// keywords tokenizing
+		if keyType, ok := keywordMap[val]; ok { // if val is in keyword map
+			t = keyType
+		}
 
 		// iden tokenizing
+		if !(val[0] >= '0' && val[0] <= '9') && t == 0 {
+			t = Iden
+		}
 
 		// literals tokenizing
+		if val[0] >= '0' && val[0] <= '9' {
+			t = Literal
+		}
 
 		// multi char tokenizing
 
