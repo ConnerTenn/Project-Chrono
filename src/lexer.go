@@ -139,14 +139,14 @@ func (lex Lexer) tokenizer() {
 		}
 
 		// multi char tokenizing
-		if val[0] >= '<' || val[0] <= '>' {
+		if val[0] >= '<' && val[0] <= '>' {
 			nextVal, err := reader.Peek(1)
 			if err != nil {
 				fmt.Println(err) // temp
 				break
 			}
 
-			if nextVal[0] >= '<' || nextVal[0] <= '>' {
+			if nextVal[0] >= '<' && nextVal[0] <= '>' {
 
 				newRune, _, err := reader.ReadRune()
 				if err != nil {
