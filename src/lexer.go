@@ -45,7 +45,7 @@ var keywordMap = map[string]TokenType{
 // lexer consumes file line by line and sends tokens to a channel to be consumed by the parser
 type Lexer struct {
 	file   *os.File
-	Tokens chan Token // might need to be a locked array to enable peeking
+	Tokens PeekableQueue
 }
 
 func (lex Lexer) StartLexing(fileName string) error {
@@ -93,7 +93,7 @@ func (lex Lexer) tokenizer() {
 	reader := bufio.NewReader(lex.file)
 
 	defer lex.file.Close()
-	defer close(lex.Tokens)
+	defer lex.Tokens.Close()
 
 	pos := [2]int{1, 1} // position / head tracker for error reporting
 
@@ -183,7 +183,7 @@ func (lex Lexer) tokenizer() {
 			t = Cmp
 		}
 
-		lex.Tokens <- Token{t, val, pos}
+		lex.Tokens.PushBack(Token{t, val, pos})
 		pos[1] += charAdd
 	}
 }

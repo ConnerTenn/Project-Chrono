@@ -4,10 +4,10 @@ import "fmt"
 
 func main() {
 	var lex Lexer
-	lex.Tokens = make(chan Token, 20)
+	lex.Tokens = NewQueue()
 	lex.StartLexing("./test")
 
-	for token := range lex.Tokens {
+	for token, ok := lex.Tokens.GetNext(); ok; token, ok = lex.Tokens.GetNext() {
 		fmt.Println(token)
 	}
 }
