@@ -49,28 +49,28 @@ type Lexer struct {
 }
 
 func NewLexer(fileName string) (Lexer, error) {
-  var (
-    lex Lexer
-    err error
-  )
-  lex.tokens = NewQueue()
-  lex.file, err = os.Open(fileName)
+	var (
+		lex Lexer
+		err error
+	)
+	lex.tokens = NewQueue()
+	lex.file, err = os.Open(fileName)
 
-  return lex, err // err will be nil if nothing was thrown, no need to check here
+	return lex, err // err will be nil if nothing was thrown, no need to check here
 }
 
 // provide an interface over the PeekableQueue so it doesn't have to be directly exported
 func (lex Lexer) GetNext() (Token, bool) {
-  return lex.tokens.GetNext()
+	return lex.tokens.GetNext()
 }
 
 func (lex Lexer) PeekNext() Token {
-  return lex.tokens.PeekNext()
+	return lex.tokens.PeekNext()
 }
 
 func (lex Lexer) ExpectNext(t TokenType) bool {
-  nextToken := lex.tokens.PeekNext()
-  return nextToken.Type == t
+	nextToken := lex.tokens.PeekNext()
+	return nextToken.Type == t
 }
 
 func multiToken(first rune, next rune) bool {
