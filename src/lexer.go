@@ -45,24 +45,35 @@ var keywordMap = map[string]TokenType{
 // lexer consumes file line by line and sends tokens to a channel to be consumed by the parser
 type Lexer struct {
 	file   *os.File
-	Tokens PeekableQueue
+	tokens PeekableQueue
 }
 
-func (lex Lexer) StartLexing(fileName string) error {
-	var err error // throws non-name on left side error (for lex.file) when using := operator
-	lex.file, err = os.Open(fileName)
-	if err != nil {
-		return err
-	}
+func NewLexer(fileName string) (Lexer, error) {
+  var (
+    lex Lexer
+    err error
+  )
+  lex.tokens = NewQueue()
+  lex.file, err = os.Open(fileName)
 
-	//lex.Tokens = make(chan Token, 20)
-
-	go lex.tokenizer()
-
-	return nil
+  return lex, err // err will be nil if nothing was thrown, no need to check here
 }
 
-func MultiToken(first rune, next rune) bool {
+// provide an interface over the PeekableQueue so it doesn't have to be directly exported
+func (lex Lexer) GetNext() (Token, bool) {
+  return lex.tokens.GetNext()
+}
+
+func (lex Lexer) PeekNext() Token {
+  return lex.tokens.PeekNext()
+}
+
+func (lex Lexer) ExpectNext(t TokenType) bool {
+  nextToken := lex.tokens.PeekNext()
+  return nextToken.Type == t
+}
+
+func multiToken(first rune, next rune) bool {
 	// check if rune is part of a Name or Value
 	checkNameVal := func(val rune) bool {
 		return (val >= '0' && val <= '9') || // test if number
@@ -89,11 +100,11 @@ func MultiToken(first rune, next rune) bool {
 	return false
 }
 
-func (lex Lexer) tokenizer() {
+func (lex Lexer) Tokenizer() {
 	reader := bufio.NewReader(lex.file)
 
 	defer lex.file.Close()
-	defer lex.Tokens.Close()
+	defer lex.tokens.Close()
 
 	pos := [2]int{1, 1} // position / head tracker for error reporting
 
@@ -106,7 +117,7 @@ func (lex Lexer) tokenizer() {
 
 		//Do While type loop. Is guaranteed to execute at least once.
 		//Will continue to loop based on the MultiToken condition
-		for buildVal := true; buildVal; buildVal = MultiToken(firstRune, nextRune) {
+		for buildVal := true; buildVal; buildVal = multiToken(firstRune, nextRune) {
 			newRune, _, err := reader.ReadRune()
 			if err != nil {
 				if err.Error() != "EOF" {
@@ -183,7 +194,7 @@ func (lex Lexer) tokenizer() {
 			t = Cmp
 		}
 
-		lex.Tokens.PushBack(Token{t, val, pos})
+		lex.tokens.PushBack(Token{t, val, pos})
 		pos[1] += charAdd
 	}
 }

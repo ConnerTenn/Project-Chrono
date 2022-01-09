@@ -3,11 +3,13 @@ package main
 import "fmt"
 
 func main() {
-	var lex Lexer
-	lex.Tokens = NewQueue()
-	lex.StartLexing("./test")
+	lex, err := NewLexer("./test")
+  if err != nil {
+    fmt.Println("Error:", err)
+  }
+  go lex.Tokenizer()
 
-	for token, ok := lex.Tokens.GetNext(); ok; token, ok = lex.Tokens.GetNext() {
+	for token, ok := lex.GetNext(); ok; token, ok = lex.GetNext() {
 		fmt.Println(token)
 	}
 }
