@@ -14,14 +14,26 @@ const (
 	Iden                // any named identifier
 	Literal             // can be split into the different literal types during lexing
 	Direction           // signal direction, input or output
-	Keyword             // generic keyword, to be swapped out with more specific groupings (such as 'direction')
+	Spec                // Wire / Reg / Param, specifier for 'variables'
+	Default             // Default case
+	If
+	Switch
 	LParen
 	RParen
 	LCurly
 	RCurly
+	LBrace
+	RBrace
+	Atmark
+	MathDiv
+	MathPlus
+	MathMin
+	MathMult
 	Comma
+	Colon
 	Asmt
 	Cmp
+	Unknown
 )
 
 type Token struct {
@@ -37,8 +49,15 @@ func (t Token) String() string {
 
 // keyword list
 var keywordMap = map[string]TokenType{
-	"in":  Direction,
-	"out": Direction,
+	"in":      Direction,
+	"out":     Direction,
+	"inout":   Direction,
+	"wire":    Spec,
+	"reg":     Spec,
+	"param":   Spec,
+	"if":      If,
+	"switch":  Switch,
+	"default": Default,
 }
 
 // could be done functionally :)
@@ -109,11 +128,14 @@ func (lex Lexer) Tokenizer() {
 	pos := [2]int{1, 1} // position / head tracker for error reporting
 
 	for true {
-		var charAdd int = 1
-		var val string = ""
+		var (
+			charAdd int       = 1
+			val     string    = ""
+			t       TokenType = Unknown
 
-		var nextRune rune
-		var firstRune rune
+			nextRune  rune
+			firstRune rune
+		)
 
 		//Do While type loop. Is guaranteed to execute at least once.
 		//Will continue to loop based on the MultiToken condition
@@ -139,8 +161,6 @@ func (lex Lexer) Tokenizer() {
 			firstRune = rune(val[0])
 			nextRune = rune(nextVal[0])
 		}
-
-		var t TokenType
 
 		// keywords tokenizing
 		if keyType, ok := keywordMap[val]; ok { // if val is in keyword map
@@ -182,8 +202,24 @@ func (lex Lexer) Tokenizer() {
 			t = LParen
 		case ")":
 			t = RParen
+		case "[":
+			t = LBrace
+		case "]":
+			t = RBrace
 		case ";":
 			t = EOL
+		case "@":
+			t = Atmark
+		case ":":
+			t = Colon
+		case "*":
+			t = MathMult
+		case "/":
+			t = MathDiv
+		case "-":
+			t = MathMin
+		case "+":
+			t = MathPlus
 		case "=":
 			t = Asmt
 		case "==":
