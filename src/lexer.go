@@ -48,7 +48,7 @@ func (t Token) String() string {
 }
 
 // keyword list
-var keywordMap = map[string]TokenType{
+var tokenMap = map[string]TokenType{
 	"in":      Direction,
 	"out":     Direction,
 	"inout":   Direction,
@@ -58,6 +58,24 @@ var keywordMap = map[string]TokenType{
 	"if":      If,
 	"switch":  Switch,
 	"default": Default,
+	",":       Comma,
+	"{":       LCurly,
+	"}":       RCurly,
+	"(":       LParen,
+	")":       RParen,
+	"[":       LBrace,
+	"]":       RBrace,
+	";":       EOL,
+	"@":       Atmark,
+	":":       Colon,
+	"*":       MathMult,
+	"/":       MathDiv,
+	"-":       MathMin,
+	"+":       MathPlus,
+	"=":       Asmt,
+	"==":      Cmp,
+	">=":      Cmp,
+	"<=":      Cmp,
 }
 
 // could be done functionally :)
@@ -163,7 +181,7 @@ func (lex Lexer) Tokenizer() {
 		}
 
 		// keywords tokenizing
-		if keyType, ok := keywordMap[val]; ok { // if val is in keyword map
+		if keyType, ok := tokenMap[val]; ok { // if val is in keyword map
 			t = keyType
 		}
 
@@ -192,42 +210,6 @@ func (lex Lexer) Tokenizer() {
 			} // ignore new lines
 		case "\r":
 			continue // ignore carriage returns (don't need to count for position tracking, always bundled with new line)
-		case ",":
-			t = Comma
-		case "{":
-			t = LCurly
-		case "}":
-			t = RCurly
-		case "(":
-			t = LParen
-		case ")":
-			t = RParen
-		case "[":
-			t = LBrace
-		case "]":
-			t = RBrace
-		case ";":
-			t = EOL
-		case "@":
-			t = Atmark
-		case ":":
-			t = Colon
-		case "*":
-			t = MathMult
-		case "/":
-			t = MathDiv
-		case "-":
-			t = MathMin
-		case "+":
-			t = MathPlus
-		case "=":
-			t = Asmt
-		case "==":
-			t = Cmp
-		case ">=":
-			t = Cmp
-		case "<=":
-			t = Cmp
 		}
 
 		lex.tokens.PushBack(Token{t, val, pos})
