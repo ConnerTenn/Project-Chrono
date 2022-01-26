@@ -1,12 +1,45 @@
 package main
 
-import "fmt"
+import (
+  "fmt"
+  "os"
+)
+
+// todo: add type to hold CLI options, with description for help menu
+func ShowHelp() {
+  fmt.Print(`Usage:
+./Project-Chrono [-h] [<file>]
+    -h --help       Show the help menu.
+                    This argument is optional and will cause the program to
+                    exit immediately.
+`)
+
+  os.Exit(-1)
+}
 
 func main() {
-	lex, err := NewLexer("./test")
+  // parse CLI command
+  args := os.Args
+
+  if len(args) == 1 {
+    fmt.Println("Please specify a file for compiling.")
+    ShowHelp()
+  }
+
+  if (args[1] == "-h" || args[1] == "--help") {
+    ShowHelp()
+  }
+
+  filename := args[1]
+
+  // for loop / switch over compiler options?
+
+	lex, err := NewLexer(filename)
 	if err != nil {
 		fmt.Println("Error:", err)
 	}
+
+
 	go lex.Tokenizer()
 
 	for token, ok := lex.GetNext(); ok; token, ok = lex.GetNext() {
