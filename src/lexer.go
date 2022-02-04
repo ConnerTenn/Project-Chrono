@@ -25,10 +25,7 @@ const (
 	LBrace
 	RBrace
 	Atmark
-	MathDiv
-	MathPlus
-	MathMin
-	MathMult
+	Math
 	Comma
 	Colon
 	Asmt
@@ -68,10 +65,10 @@ var tokenMap = map[string]TokenType{
 	";":       EOL,
 	"@":       Atmark,
 	":":       Colon,
-	"*":       MathMult,
-	"/":       MathDiv,
-	"-":       MathMin,
-	"+":       MathPlus,
+	"*":       Math,
+	"/":       Math,
+	"-":       Math,
+	"+":       Math,
 	"=":       Asmt,
 	"==":      Cmp,
 	">=":      Cmp,
