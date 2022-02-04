@@ -183,7 +183,7 @@ func (lex Lexer) Tokenizer() {
 		}
 
 		// iden tokenizing
-		if !(val[0] >= '0' && val[0] <= '9') && t == 0 {
+		if ((val[0] >= 'A' && val[0] <= 'Z') || (val[0] >= 'a' && val[0] <= 'z')) && t == Unknown {
 			t = Iden
 		}
 
