@@ -1,9 +1,48 @@
 package main
 
-// use a prat parser design
+import (
+	"fmt"
+	"os"
+)
 
-// primary parsing function
-func Parse(lex *Lexer) *AST {
+func displayError(t Token) {
 
-	return nil
+	fmt.Println("Unexpected Token: ", t)
+
+	os.Exit(-1)
+}
+
+// use a prat / segmented parser design
+
+func parseParam(lex *Lexer, head *AST) AST {
+
+	return *head
+}
+
+// primary parsing function, can make assumptions about inital tokens
+func Parse(lex *Lexer) AST {
+	head := Module{}
+	var t Token
+
+	if !lex.ExpectNext(Iden) {
+		t, _ = lex.GetNext()
+		displayError(t)
+	}
+
+	t, _ = lex.GetNext()
+	head.Name = t.Value
+
+	if !lex.ExpectNext(LParen) {
+		t, _ = lex.GetNext()
+		displayError(t)
+	}
+
+	lex.GetNext()
+
+	// build parameters
+	//for {
+
+	//}
+
+	return head
 }

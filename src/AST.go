@@ -27,6 +27,10 @@ type Module struct {
 	Block  *AST
 }
 
+func (m Module) String() string {
+	return m.Name
+}
+
 func (m Module) GetNext() *AST {
 	return m.Block
 }

@@ -41,7 +41,8 @@ func main() {
 
 	go lex.Tokenizer()
 
-	for token, ok := lex.GetNext(); ok; token, ok = lex.GetNext() {
-		fmt.Println(token)
-	}
+	// doing this sync for now
+	tree := Parse(&lex)
+
+	fmt.Println(tree)
 }
