@@ -8,6 +8,7 @@ type PeekableQueue struct {
 	queue  chan Token
 	peeked Token
 	ok     bool
+	Temp   int
 	mut    sync.Mutex
 }
 
@@ -26,9 +27,10 @@ func (q PeekableQueue) PushBack(t Token) {
 	q.queue <- t
 }
 
-func (q PeekableQueue) PeekNext() Token {
+func (q *PeekableQueue) PeekNext() Token {
 	q.mut.Lock()
 	var retVal Token
+
 	if q.peeked.Type == -1 {
 		q.peeked, q.ok = <-q.queue
 	}
@@ -39,7 +41,7 @@ func (q PeekableQueue) PeekNext() Token {
 	return retVal
 }
 
-func (q PeekableQueue) GetNext() (Token, bool) {
+func (q *PeekableQueue) GetNext() (Token, bool) {
 	q.mut.Lock()
 	var (
 		retVal Token

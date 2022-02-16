@@ -37,7 +37,7 @@ func Parse(lex *Lexer) AST {
 		displayError(t)
 	}
 
-	lex.GetNext()
+	lex.GetNext() // drop LParen
 
 	// build parameters
 	//for {
