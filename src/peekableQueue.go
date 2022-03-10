@@ -8,7 +8,6 @@ type PeekableQueue struct {
 	queue  chan Token
 	peeked Token
 	ok     bool
-	Temp   int
 	mut    sync.Mutex
 }
 

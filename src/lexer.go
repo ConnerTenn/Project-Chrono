@@ -94,6 +94,10 @@ func NewLexer(fileName string) (Lexer, error) {
 }
 
 // provide an interface over the PeekableQueue so it doesn't have to be directly exported
+func (lex *Lexer) GetNext() (Token, bool) {
+	return lex.tokens.GetNext()
+}
+
 func (lex *Lexer) PeekNext() Token {
 	return lex.tokens.PeekNext()
 }
