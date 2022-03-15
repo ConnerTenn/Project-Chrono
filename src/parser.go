@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"strconv"
 )
 
 func displayError(t Token) {
@@ -19,6 +20,8 @@ func parseParam(lex *Lexer, head *AST) AST {
 	return *head
 }
 
+// todo: split out parse logic
+// todo: remove assumptions & error handling
 // primary parsing function, can make assumptions about inital tokens
 func Parse(lex *Lexer) AST {
 	head := Module{}
@@ -40,9 +43,79 @@ func Parse(lex *Lexer) AST {
 	lex.GetNext() // drop LParen
 
 	// build parameters
-	//for {
+	for {
+		if !lex.ExpectNext(Direction) {
+			break // if the next value isn't a direction, there are no parameters
+		}
+		t, _ := lex.GetNext()
+		curParam := Parameter{}
 
-	//}
+		// set / get direction
+		switch t.Value {
+		case "in":
+			{
+				curParam.Dir = In
+			}
+		case "out":
+			{
+				curParam.Dir = Out
+			}
+		case "inout":
+			{
+				curParam.Dir = Inout
+			}
+		}
+
+		// set / get param type
+		if lex.ExpectNext(Spec) {
+			t, _ = lex.GetNext()
+			switch t.Value {
+			case "reg":
+				{
+					curParam.Type = Reg
+				}
+			}
+		}
+
+		// set / get bit width
+		if lex.ExpectNext(LBrace) {
+			lex.GetNext()
+			t, _ = lex.GetNext()
+
+			if t.Type != Literal {
+				displayError(t)
+			}
+
+			curParam.Width, _ = strconv.Atoi(t.Value)
+
+			t, _ = lex.GetNext()
+
+			if t.Type != RBrace {
+				displayError(t)
+			}
+		}
+
+		// get / set name
+		t, _ = lex.GetNext()
+
+		if t.Type != Iden {
+			displayError(t)
+		}
+
+		curParam.Name = t.Value
+
+		// add to params list
+		head.Params = append(head.Params, curParam)
+
+		t, _ = lex.GetNext()
+
+		// check if end of param list
+		if t.Type == RParen {
+			break
+		} else if t.Type != Comma {
+			displayError(t)
+		}
+	}
 
 	return head
 }

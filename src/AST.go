@@ -1,34 +1,50 @@
 package main
 
+import "fmt"
+
 // TODO: split these out in a package
 
 type AST interface {
 	GetNext() *AST
 }
 
-type ParamType int
+type ParamDir int
 
 const (
-	In = iota
+	In ParamDir = iota
 	Out
 	Inout
 )
 
-type Parameters struct {
+type ParamType int
+
+const (
+	Reg ParamType = iota
+	Wire
+	//Var?
+	// Which is default?
+)
+
+type Parameter struct {
 	Name  string
-	Type  ParamType
+	Dir   ParamDir
 	Width int
-	Reg   bool
+	Type  ParamType
 }
 
 type Module struct {
 	Name   string
-	Params []Parameters
+	Params []Parameter
 	Block  *AST
 }
 
 func (m Module) String() string {
-	return m.Name
+	var params string
+	for i, param := range m.Params {
+		params += fmt.Sprintf("%d: \n  Name: %v\n  Dir: %v\n  Width: %d\n  Type: %d\n",
+			i, param.Name, param.Dir, param.Width, param.Type)
+	}
+	return "Name: " + m.Name + "\nParams: " + params
 }
 
 func (m Module) GetNext() *AST {
@@ -53,14 +69,14 @@ type MathExpression struct {
 	Op  Operation
 }
 
-func GetLeft() *MathExpression {
+func (m MathExpression) GetLeft() *MathExpression {
 	return nil
 }
 
-func GetRight() *MathExpression {
+func (m MathExpression) GetRight() *MathExpression {
 	return nil
 }
 
-func IsComputable() bool {
+func (m MathExpression) IsComputable() bool {
 	return false
 }
