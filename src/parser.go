@@ -15,22 +15,70 @@ func displayError(t Token) {
 
 // use a prat / segmented parser design
 
-func parseParam(lex *Lexer, head *AST) AST {
+func parseParam(lex *Lexer) Parameter {
+	t, _ := lex.GetNext()
+	curParam := Parameter{}
 
-	return *head
-}
+	// set / get direction
+	switch t.Value {
+	case "in":
+		{
+			curParam.Dir = In
+		}
+	case "out":
+		{
+			curParam.Dir = Out
+		}
+	case "inout":
+		{
+			curParam.Dir = Inout
+		}
+	}
 
-// todo: split out parse logic
-// todo: remove assumptions & error handling
-// primary parsing function, can make assumptions about inital tokens
-func Parse(lex *Lexer) AST {
-	head := Module{}
-	var t Token
-
-	if !lex.ExpectNext(Iden) {
+	// set / get param type
+	if lex.ExpectNext(Spec) {
 		t, _ = lex.GetNext()
+		switch t.Value {
+		case "reg":
+			{
+				curParam.Type = Reg
+			}
+		}
+	}
+
+	// set / get bit width
+	if lex.ExpectNext(LBrace) {
+		lex.GetNext()
+		t, _ = lex.GetNext()
+
+		if t.Type != Literal {
+			displayError(t)
+		}
+
+		curParam.Width, _ = strconv.Atoi(t.Value)
+
+		t, _ = lex.GetNext()
+
+		if t.Type != RBrace {
+			displayError(t)
+		}
+	}
+
+	// get / set name
+	t, _ = lex.GetNext()
+
+	if t.Type != Iden {
 		displayError(t)
 	}
+
+	curParam.Name = t.Value
+
+	return curParam
+}
+
+func parseModule(lex *Lexer) Module {
+	head := Module{}
+	var t Token
 
 	t, _ = lex.GetNext()
 	head.Name = t.Value
@@ -47,65 +95,9 @@ func Parse(lex *Lexer) AST {
 		if !lex.ExpectNext(Direction) {
 			break // if the next value isn't a direction, there are no parameters
 		}
-		t, _ := lex.GetNext()
-		curParam := Parameter{}
-
-		// set / get direction
-		switch t.Value {
-		case "in":
-			{
-				curParam.Dir = In
-			}
-		case "out":
-			{
-				curParam.Dir = Out
-			}
-		case "inout":
-			{
-				curParam.Dir = Inout
-			}
-		}
-
-		// set / get param type
-		if lex.ExpectNext(Spec) {
-			t, _ = lex.GetNext()
-			switch t.Value {
-			case "reg":
-				{
-					curParam.Type = Reg
-				}
-			}
-		}
-
-		// set / get bit width
-		if lex.ExpectNext(LBrace) {
-			lex.GetNext()
-			t, _ = lex.GetNext()
-
-			if t.Type != Literal {
-				displayError(t)
-			}
-
-			curParam.Width, _ = strconv.Atoi(t.Value)
-
-			t, _ = lex.GetNext()
-
-			if t.Type != RBrace {
-				displayError(t)
-			}
-		}
-
-		// get / set name
-		t, _ = lex.GetNext()
-
-		if t.Type != Iden {
-			displayError(t)
-		}
-
-		curParam.Name = t.Value
 
 		// add to params list
-		head.Params = append(head.Params, curParam)
+		head.Params = append(head.Params, parseParam(lex))
 
 		t, _ = lex.GetNext()
 
@@ -116,6 +108,20 @@ func Parse(lex *Lexer) AST {
 			displayError(t)
 		}
 	}
+
+	return head
+}
+
+// todo: remove assumptions & error handling
+// primary parsing function, can make assumptions about inital tokens
+func Parse(lex *Lexer) AST {
+
+	if !lex.ExpectNext(Iden) {
+		t, _ := lex.GetNext()
+		displayError(t)
+	}
+
+	head := parseModule(lex)
 
 	return head
 }
