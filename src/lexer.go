@@ -103,7 +103,7 @@ func (lex *Lexer) PeekNext() Token {
 }
 
 func (lex *Lexer) ExpectNext(t TokenType) bool {
-	nextToken := lex.tokens.PeekNext()
+	nextToken := lex.PeekNext()
 	return nextToken.Type == t
 }
 
