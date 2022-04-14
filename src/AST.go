@@ -19,10 +19,9 @@ const (
 type ParamType int
 
 const (
-	Reg ParamType = iota
-	Wire
+	Wire ParamType = iota //Default
+	Reg
 	//Var?
-	// Which is default?
 )
 
 type Parameter struct {
