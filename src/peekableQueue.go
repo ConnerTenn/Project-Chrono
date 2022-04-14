@@ -1,6 +1,8 @@
 package main
 
-import "sync"
+import (
+	"sync"
+)
 
 // if there is only one reader thread, the lock is not needed
 // move to list for peeking ahead multiple tokens?
@@ -26,7 +28,7 @@ func (q PeekableQueue) PushBack(t Token) {
 	q.queue <- t
 }
 
-func (q *PeekableQueue) PeekNext() Token {
+func (q *PeekableQueue) PeekNext() (Token, bool) {
 	q.mut.Lock()
 	var retVal Token
 
@@ -37,7 +39,7 @@ func (q *PeekableQueue) PeekNext() Token {
 	retVal = q.peeked
 
 	q.mut.Unlock()
-	return retVal
+	return retVal, q.ok
 }
 
 func (q *PeekableQueue) GetNext() (Token, bool) {

@@ -98,13 +98,13 @@ func (lex *Lexer) GetNext() (Token, bool) {
 	return lex.tokens.GetNext()
 }
 
-func (lex *Lexer) PeekNext() Token {
+func (lex *Lexer) PeekNext() (Token, bool) {
 	return lex.tokens.PeekNext()
 }
 
 func (lex *Lexer) ExpectNext(t TokenType) bool {
-	nextToken := lex.PeekNext()
-	return nextToken.Type == t
+	nextToken, ok := lex.PeekNext()
+	return ok && nextToken.Type == t
 }
 
 func multiToken(first rune, next rune) bool {
