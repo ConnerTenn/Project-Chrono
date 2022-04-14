@@ -51,7 +51,7 @@ var tokenMap = map[string]TokenType{
 	"inout":   Direction,
 	"wire":    Spec,
 	"reg":     Spec,
-	"param":   Spec,
+	"var":     Spec,
 	"if":      If,
 	"switch":  Switch,
 	"default": Default,
