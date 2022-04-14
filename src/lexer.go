@@ -107,6 +107,11 @@ func (lex *Lexer) ExpectNext(t TokenType) bool {
 	return ok && nextToken.Type == t
 }
 
+func (lex *Lexer) NextExists() bool {
+	_, ok := lex.PeekNext()
+	return ok
+}
+
 func multiToken(first rune, next rune) bool {
 	// check if rune is part of a Name or Value
 	checkNameVal := func(val rune) bool {

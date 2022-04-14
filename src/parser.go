@@ -108,6 +108,15 @@ func parseModule(lex *Lexer) Module {
 		}
 	}
 
+	// === FIX ME!!! ===
+	// Temp code
+	//Consume all until next RCurly
+	for !lex.ExpectNext(RCurly) {
+		lex.GetNext()
+	}
+	//Consume RCurly
+	lex.GetNext()
+
 	return head
 }
 
@@ -115,12 +124,18 @@ func parseModule(lex *Lexer) Module {
 // primary parsing function, can make assumptions about inital tokens
 func Parse(lex *Lexer) AST {
 
-	if !lex.ExpectNext(Iden) {
-		t, _ := lex.GetNext()
-		displayError(t)
-	}
+	head := Block{}
 
-	head := parseModule(lex)
+	for lex.NextExists() {
+
+		if !lex.ExpectNext(Iden) {
+			t, _ := lex.GetNext()
+			displayError(t)
+		}
+		var elem AST = parseModule(lex)
+
+		head.Children = append(head.Children, &elem)
+	}
 
 	return head
 }
