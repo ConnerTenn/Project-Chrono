@@ -38,11 +38,10 @@ func parseParam(lex *Lexer) Parameter {
 	// set / get param type
 	if lex.ExpectNext(Spec) {
 		t, _ = lex.GetNext()
+		curParam.Type = Wire
 		switch t.Value {
 		case "reg":
-			{
-				curParam.Type = Reg
-			}
+			curParam.Type = Reg
 		}
 	}
 

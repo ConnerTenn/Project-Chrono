@@ -44,5 +44,5 @@ func main() {
 	// doing this sync for now
 	tree := Parse(&lex)
 
-	fmt.Println(tree)
+	PrintAST(&tree)
 }

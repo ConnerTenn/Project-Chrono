@@ -1,12 +1,30 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"strings"
+)
 
 // TODO: split these out in a package
 
 type AST interface {
-	GetNext() *AST
+	GetNext() []*AST
 }
+
+func printAST(ast *AST, level int) {
+	fmt.Print(strings.Repeat(" ", level*2))
+	fmt.Println(*ast)
+	nextList := (*ast).GetNext()
+	for _, element := range nextList {
+		printAST(element, level+1)
+	}
+}
+
+func PrintAST(ast *AST) {
+	printAST(ast, 0)
+}
+
+//== Module ==
 
 type ParamDir int
 
@@ -19,10 +37,9 @@ const (
 type ParamType int
 
 const (
-	Reg ParamType = iota
-	Wire
+	Wire ParamType = iota //Default
+	Reg
 	//Var?
-	// Which is default?
 )
 
 type Parameter struct {
@@ -33,26 +50,59 @@ type Parameter struct {
 }
 
 type Module struct {
-	Name   string
-	Params []Parameter
-	Block  *AST
+	Name     string
+	Params   []Parameter
+	Children []*AST
 }
 
 func (m Module) String() string {
 	var params string
 	for i, param := range m.Params {
-		params += fmt.Sprintf("%d: \n  Name: %v\n  Dir: %v\n  Width: %d\n  Type: %d\n",
-			i, param.Name, param.Dir, param.Width, param.Type)
+		//Add space between parameters
+		if i != 0 {
+			params += " "
+		}
+
+		params += param.Name + ":"
+
+		if param.Dir == 0 {
+			params += "in"
+		} else if param.Dir == 1 {
+			params += "out"
+		}
+
+		params += ","
+
+		if param.Type == Reg {
+			params += "reg"
+		} else if param.Type == Wire {
+			params += "wire"
+		}
+
+		params += "[" + fmt.Sprint(param.Width) + "]"
 	}
-	return "Name: " + m.Name + "\nParams: " + params
+	return "mod:" + m.Name + " (" + params + ")"
 }
 
-func (m Module) GetNext() *AST {
-	return m.Block
+func (m Module) GetNext() []*AST {
+	return m.Children
 }
+
+//== Block ==
 
 type Block struct {
+	Children []*AST
 }
+
+func (blk Block) GetNext() []*AST {
+	return blk.Children
+}
+
+func (blk Block) String() string {
+	return "Block"
+}
+
+//== Math ==
 
 type Operation int
 
