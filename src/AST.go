@@ -26,6 +26,7 @@ func PrintAST(ast *AST) {
 
 //== Module ==
 
+//go:generate stringer -type=ParamDir
 type ParamDir int
 
 const (
@@ -34,6 +35,7 @@ const (
 	Inout
 )
 
+//go:generate stringer -type=ParamType
 type ParamType int
 
 const (
@@ -49,6 +51,10 @@ type Parameter struct {
 	Type  ParamType
 }
 
+func (p Parameter) String() string {
+  return fmt.Sprintf("%s:%s,%s[%d]", p.Name, p.Dir, p.Type, p.Width)
+}
+
 type Module struct {
 	Name     string
 	Params   []Parameter
@@ -62,24 +68,7 @@ func (m Module) String() string {
 		if i != 0 {
 			params += " "
 		}
-
-		params += param.Name + ":"
-
-		if param.Dir == 0 {
-			params += "in"
-		} else if param.Dir == 1 {
-			params += "out"
-		}
-
-		params += ","
-
-		if param.Type == Reg {
-			params += "reg"
-		} else if param.Type == Wire {
-			params += "wire"
-		}
-
-		params += "[" + fmt.Sprint(param.Width) + "]"
+    params += param.String()
 	}
 	return "mod:" + m.Name + " (" + params + ")"
 }
