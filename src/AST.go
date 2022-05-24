@@ -8,20 +8,21 @@ import (
 // TODO: split these out in a package
 
 type AST interface {
-	GetNext() []*AST
+	GetNext() *AST
+	printAST(level int)
 }
 
-func printAST(ast *AST, level int) {
-	fmt.Print(strings.Repeat(" ", level*2))
-	fmt.Println(*ast)
-	nextList := (*ast).GetNext()
-	for _, element := range nextList {
-		printAST(element, level+1)
+func GetLast(ast *AST) *AST {
+	next := ast
+	for next != nil {
+		ast = next
+		next = (*ast).GetNext()
 	}
+	return ast
 }
 
 func PrintAST(ast *AST) {
-	printAST(ast, 0)
+	(*ast).printAST(0)
 }
 
 //== Module ==
@@ -50,9 +51,9 @@ type Parameter struct {
 }
 
 type Module struct {
-	Name     string
-	Params   []Parameter
-	Children []*AST
+	Name   string
+	Params []Parameter
+	Block  *AST
 }
 
 func (m Module) String() string {
@@ -84,22 +85,39 @@ func (m Module) String() string {
 	return "mod:" + m.Name + " (" + params + ")"
 }
 
-func (m Module) GetNext() []*AST {
-	return m.Children
+func (m Module) GetNext() *AST {
+	return m.Block
+}
+
+func (m *Module) printAST(level int) {
+	fmt.Print(strings.Repeat(" ", level*2))
+	fmt.Println(m)
 }
 
 //== Block ==
 
 type Block struct {
-	Children []*AST
+	idx      int
+	Elements []*AST
 }
 
-func (blk Block) GetNext() []*AST {
-	return blk.Children
+func (blk *Block) GetNext() *AST {
+	next := blk.Elements[blk.idx]
+	blk.idx++
+	return next
 }
 
 func (blk Block) String() string {
 	return "Block"
+}
+
+func (blk *Block) printAST(level int) {
+	fmt.Print(strings.Repeat(" ", level*2))
+	fmt.Println(blk)
+
+	for i := 0; i < len(blk.Elements); i++ {
+		(*blk.GetNext()).printAST(level + 1)
+	}
 }
 
 //== Math ==

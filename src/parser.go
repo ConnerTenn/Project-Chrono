@@ -122,20 +122,30 @@ func parseModule(lex *Lexer) Module {
 
 // todo: remove assumptions & error handling
 // primary parsing function, can make assumptions about inital tokens
-func Parse(lex *Lexer) AST {
+func parseBlock(lex *Lexer) Block {
+	block := Block{}
 
-	head := Block{}
-
-	for lex.NextExists() {
-
-		if !lex.ExpectNext(Iden) {
-			t, _ := lex.GetNext()
-			displayError(t)
+	for !(lex.ExpectNext(EOL) || lex.ExpectNext(RCurly)) {
+		var next AST
+		if lex.ExpectNext(Iden) {
+			m := parseModule(lex)
+			next = &m
+		} else {
+			break
 		}
-		var elem AST = parseModule(lex)
 
-		head.Children = append(head.Children, &elem)
+		block.Elements = append(block.Elements, &next)
 	}
 
-	return head
+	//Consume RCurly
+	if lex.ExpectNext(RCurly) {
+		lex.GetNext()
+	}
+
+	return block
+}
+
+func Parse(lex *Lexer) AST {
+	ast := parseBlock(lex)
+	return &ast
 }
