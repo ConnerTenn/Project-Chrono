@@ -102,9 +102,13 @@ type Block struct {
 }
 
 func (blk *Block) GetNext() *AST {
-	next := blk.Elements[blk.idx]
-	blk.idx++
-	return next
+	if blk.idx < len(blk.Elements) {
+		next := blk.Elements[blk.idx]
+		blk.idx++
+		return next
+	}
+	blk.idx = 0
+	return nil
 }
 
 func (blk Block) String() string {
@@ -115,8 +119,12 @@ func (blk *Block) printAST(level int) {
 	fmt.Print(strings.Repeat(" ", level*2))
 	fmt.Println(blk)
 
-	for i := 0; i < len(blk.Elements); i++ {
-		(*blk.GetNext()).printAST(level + 1)
+	for {
+		next := blk.GetNext()
+		if next == nil {
+			break
+		}
+		(*next).printAST(level + 1)
 	}
 }
 
