@@ -12,11 +12,13 @@ func _() {
 	_ = x[Sub-1]
 	_ = x[Multi-2]
 	_ = x[Div-3]
+	_ = x[LShift-4]
+	_ = x[RShift-5]
 }
 
-const _Operation_name = "AddSubMultiDiv"
+const _Operation_name = "AddSubMultiDivLShiftRShift"
 
-var _Operation_index = [...]uint8{0, 3, 6, 11, 14}
+var _Operation_index = [...]uint8{0, 3, 6, 11, 14, 20, 26}
 
 func (i Operation) String() string {
 	if i < 0 || i >= Operation(len(_Operation_index)-1) {

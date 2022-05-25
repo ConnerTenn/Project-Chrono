@@ -8,6 +8,7 @@ import (
 type AST interface {
 	GetNext() AST
 	printAST(level int)
+  String() string
 }
 
 func GetLast(ast AST) AST {
@@ -71,7 +72,14 @@ func (m Module) String() string {
 		}
 		params += param.String()
 	}
-	return "mod:" + m.Name + " (" + params + ")"
+
+  s := "mod:" + m.Name + " (" + params + ")"
+
+  if (m.Child != nil) {
+    s += "\n  " + m.Child.String()
+  }
+
+	return s
 }
 
 func (m Module) GetNext() AST {
