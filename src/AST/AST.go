@@ -6,21 +6,21 @@ import (
 )
 
 type AST interface {
-	GetNext() *AST
+	GetNext() AST
 	printAST(level int)
 }
 
-func GetLast(ast *AST) *AST {
+func GetLast(ast AST) AST {
 	next := ast
 	for next != nil {
 		ast = next
-		next = (*ast).GetNext()
+		next = ast.GetNext()
 	}
 	return ast
 }
 
-func PrintAST(ast *AST) {
-	(*ast).printAST(0)
+func PrintAST(ast AST) {
+	ast.printAST(0)
 }
 
 //== Module ==
@@ -57,8 +57,8 @@ func (p Parameter) String() string {
 type Module struct {
 	Name   string
 	Params []Parameter
-	Child  *AST
-	Next   *AST
+	Child  AST
+	Next   AST
 }
 
 // todo: add child and next
@@ -74,11 +74,11 @@ func (m Module) String() string {
 	return "mod:" + m.Name + " (" + params + ")"
 }
 
-func (m Module) GetNext() *AST {
+func (m Module) GetNext() AST {
 	return m.Next
 }
 
-func (m Module) GetChild() *AST {
+func (m Module) GetChild() AST {
 	return m.Child
 }
 
@@ -91,10 +91,10 @@ func (m *Module) printAST(level int) {
 // todo: convert to interface
 type Block struct {
 	idx      int
-	Elements []*AST
+	Elements []AST
 }
 
-func (blk *Block) GetNext() *AST {
+func (blk *Block) GetNext() AST {
 	if blk.idx < len(blk.Elements) {
 		next := blk.Elements[blk.idx]
 		blk.idx++
@@ -117,6 +117,6 @@ func (blk *Block) printAST(level int) {
 		if next == nil {
 			break
 		}
-		(*next).printAST(level + 1)
+		next.printAST(level + 1)
 	}
 }
