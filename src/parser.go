@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	AST "github.com/ConnerTenn/Project-Chrono/AST"
 	"os"
 	"strconv"
 )
@@ -15,33 +16,33 @@ func displayError(t Token) {
 
 // use a prat / segmented parser design
 
-func parseParam(lex *Lexer) Parameter {
+func parseParam(lex *Lexer) AST.Parameter {
 	t, _ := lex.GetNext()
-	curParam := Parameter{}
+	curParam := AST.Parameter{}
 
 	// set / get direction
 	switch t.Value {
 	case "in":
 		{
-			curParam.Dir = In
+			curParam.Dir = AST.In
 		}
 	case "out":
 		{
-			curParam.Dir = Out
+			curParam.Dir = AST.Out
 		}
 	case "inout":
 		{
-			curParam.Dir = Inout
+			curParam.Dir = AST.Inout
 		}
 	}
 
 	// set / get param type
 	if lex.ExpectNext(Spec) {
 		t, _ = lex.GetNext()
-		curParam.Type = Wire
+		curParam.Type = AST.Wire
 		switch t.Value {
 		case "reg":
-			curParam.Type = Reg
+			curParam.Type = AST.Reg
 		}
 	}
 
@@ -75,8 +76,8 @@ func parseParam(lex *Lexer) Parameter {
 	return curParam
 }
 
-func parseModule(lex *Lexer) Module {
-	head := Module{}
+func parseModule(lex *Lexer) AST.Module {
+	head := AST.Module{}
 	var t Token
 
 	t, _ = lex.GetNext()
@@ -122,11 +123,11 @@ func parseModule(lex *Lexer) Module {
 
 // todo: remove assumptions & error handling
 // primary parsing function, can make assumptions about inital tokens
-func parseBlock(lex *Lexer) Block {
-	block := Block{}
+func parseBlock(lex *Lexer) AST.Block {
+	block := AST.Block{}
 
 	for !(lex.ExpectNext(EOL) || lex.ExpectNext(RCurly)) {
-		var next AST
+		var next AST.AST
 		if lex.ExpectNext(Iden) {
 			m := parseModule(lex)
 			next = &m
@@ -145,7 +146,7 @@ func parseBlock(lex *Lexer) Block {
 	return block
 }
 
-func Parse(lex *Lexer) AST {
+func Parse(lex *Lexer) AST.AST {
 	ast := parseBlock(lex)
 	return &ast
 }

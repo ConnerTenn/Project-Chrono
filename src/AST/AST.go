@@ -1,11 +1,9 @@
-package main
+package AST
 
 import (
 	"fmt"
 	"strings"
 )
-
-// TODO: split these out in a package
 
 type AST interface {
 	GetNext() *AST
@@ -53,15 +51,17 @@ type Parameter struct {
 }
 
 func (p Parameter) String() string {
-  return fmt.Sprintf("%s:%s,%s[%d]", p.Name, p.Dir, p.Type, p.Width)
+	return fmt.Sprintf("%s:%s,%s[%d]", p.Name, p.Dir, p.Type, p.Width)
 }
 
 type Module struct {
 	Name   string
 	Params []Parameter
-	Block  *AST
+	Child  *AST
+	Next   *AST
 }
 
+// todo: add child and next
 func (m Module) String() string {
 	var params string
 	for i, param := range m.Params {
@@ -69,13 +69,17 @@ func (m Module) String() string {
 		if i != 0 {
 			params += " "
 		}
-    params += param.String()
+		params += param.String()
 	}
 	return "mod:" + m.Name + " (" + params + ")"
 }
 
 func (m Module) GetNext() *AST {
-	return m.Block
+	return m.Next
+}
+
+func (m Module) GetChild() *AST {
+	return m.Child
 }
 
 func (m *Module) printAST(level int) {
@@ -84,7 +88,7 @@ func (m *Module) printAST(level int) {
 }
 
 //== Block ==
-
+// todo: convert to interface
 type Block struct {
 	idx      int
 	Elements []*AST
@@ -115,33 +119,4 @@ func (blk *Block) printAST(level int) {
 		}
 		(*next).printAST(level + 1)
 	}
-}
-
-//== Math ==
-
-type Operation int
-
-const (
-	Add = iota
-	Sub
-	Multi
-	Div
-)
-
-type MathExpression struct {
-	LHS *MathExpression
-	RHS *MathExpression
-	Op  Operation
-}
-
-func (m MathExpression) GetLeft() *MathExpression {
-	return nil
-}
-
-func (m MathExpression) GetRight() *MathExpression {
-	return nil
-}
-
-func (m MathExpression) IsComputable() bool {
-	return false
 }

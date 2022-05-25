@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	AST "github.com/ConnerTenn/Project-Chrono/AST"
 	"os"
 )
 
@@ -44,5 +45,5 @@ func main() {
 	// doing this sync for now
 	tree := Parse(&lex)
 
-	PrintAST(&tree)
+	AST.PrintAST(&tree)
 }
