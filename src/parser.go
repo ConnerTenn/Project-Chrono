@@ -2,9 +2,10 @@ package main
 
 import (
 	"fmt"
-	AST "github.com/ConnerTenn/Project-Chrono/AST"
 	"os"
 	"strconv"
+
+	AST "github.com/ConnerTenn/Project-Chrono/AST"
 )
 
 func displayError(t Token) {
@@ -127,7 +128,7 @@ func parseModule(lex *Lexer) AST.Module {
 			value := AST.ValueExpression{}
 			t, _ := lex.GetNext()
 
-      value.Value = t.Value
+			value.Value = t.Value
 
 			if t.Type == Iden {
 				value.Var = true
@@ -137,10 +138,10 @@ func parseModule(lex *Lexer) AST.Module {
 				displayError(t)
 			}
 
-      return value
+			return value
 		}
 
-    parseOperation := func() AST.Operation {
+		parseOperation := func() AST.Operation {
 			var op AST.Operation
 			t, _ = lex.GetNext()
 
@@ -162,17 +163,17 @@ func parseModule(lex *Lexer) AST.Module {
 			return op
 		}
 
-    // assume lhs and rhs are values and proper syntax is given
+		// assume lhs and rhs are values and proper syntax is given
 		math.LHS = parseValue()
 
 		math.Op = parseOperation()
 
-    math.RHS = parseValue()
+		math.RHS = parseValue()
 
 		return math
 	}
 
-  t, _ = lex.GetNext() // drop LCurly
+	t, _ = lex.GetNext() // drop LCurly
 
 	for {
 		if t.Type == Iden && lex.ExpectNext(Asmt) { // parse assignment

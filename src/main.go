@@ -2,8 +2,9 @@ package main
 
 import (
 	"fmt"
-	AST "github.com/ConnerTenn/Project-Chrono/AST"
 	"os"
+
+	AST "github.com/ConnerTenn/Project-Chrono/AST"
 )
 
 // todo: add type to hold CLI options, with description for help menu

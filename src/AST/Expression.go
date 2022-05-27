@@ -9,9 +9,9 @@ import (
 
 type Expression interface {
 	IsComputable() bool // is CTE available?
-  GetNext() AST
-  printAST(level int)
-  String() string
+	GetNext() AST
+	printAST(level int)
+	String() string
 }
 
 type ValueExpression struct {
