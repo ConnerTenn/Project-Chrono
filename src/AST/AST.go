@@ -72,18 +72,16 @@ func (m Module) String() string {
 		params += param.String()
 	}
 
-	s := "mod:" + m.Name + " (" + params + ")"
-
-	for _, elem := range m.Elements {
-		s += "\n    " + elem.String()
-	}
-
-	return s
+	return "mod:" + m.Name + " (" + params + ")"
 }
 
 func (m *Module) printAST(level int) {
 	fmt.Print(strings.Repeat(" ", level*2))
 	fmt.Println(m)
+
+	for _, elem := range m.Elements {
+		elem.printAST(level + 1)
+	}
 }
 
 //== Block ==
