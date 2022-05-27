@@ -26,10 +26,6 @@ func (v ValueExpression) printAST(level int) {
 	fmt.Println(v)
 }
 
-func (v ValueExpression) GetNext() AST {
-	return nil
-}
-
 func (v ValueExpression) IsComputable() bool {
 	return !v.Var
 }
@@ -37,16 +33,11 @@ func (v ValueExpression) IsComputable() bool {
 type AssignmentExpression struct {
 	Name string
 	RHS  Expression
-	Next AST
 }
 
 func (ae AssignmentExpression) String() string {
 	s := fmt.Sprintf("%s: %s", ae.Name, ae.RHS)
 	return s
-}
-
-func (ae AssignmentExpression) GetNext() AST {
-	return (ae.Next)
 }
 
 func (ae AssignmentExpression) printAST(level int) {
@@ -85,10 +76,6 @@ func (m MathExpression) String() string {
 func (m MathExpression) printAST(level int) {
 	fmt.Print(strings.Repeat(" ", level*2))
 	fmt.Println(m)
-}
-
-func (m MathExpression) GetNext() AST {
-	return nil
 }
 
 func (m MathExpression) GetLeft() Expression {

@@ -6,18 +6,8 @@ import (
 )
 
 type AST interface {
-	GetNext() AST
 	printAST(level int)
 	String() string
-}
-
-func GetLast(ast AST) AST {
-	next := ast
-	for next != nil {
-		ast = next
-		next = ast.GetNext()
-	}
-	return ast
 }
 
 func PrintAST(ast AST) {
@@ -92,18 +82,7 @@ func (m *Module) printAST(level int) {
 
 // todo: convert to interface
 type Block struct {
-	idx      int
 	Elements []AST
-}
-
-func (blk *Block) GetNext() AST {
-	if blk.idx < len(blk.Elements) {
-		next := blk.Elements[blk.idx]
-		blk.idx++
-		return next
-	}
-	blk.idx = 0
-	return nil
 }
 
 func (blk Block) String() string {
@@ -114,11 +93,7 @@ func (blk *Block) printAST(level int) {
 	fmt.Print(strings.Repeat(" ", level*2))
 	fmt.Println(blk)
 
-	for {
-		next := blk.GetNext()
-		if next == nil {
-			break
-		}
-		next.printAST(level + 1)
+	for _, elem := range blk.Elements {
+		elem.printAST(level + 1)
 	}
 }
