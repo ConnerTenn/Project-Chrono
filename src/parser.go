@@ -194,7 +194,7 @@ func parseModule(lex *Lexer) AST.Module {
 		}
 	}
 
-	head.Child = expTop
+	head.Elements = append(head.Elements, expTop)
 
 	// === FIX ME!!! ===
 	// Temp code

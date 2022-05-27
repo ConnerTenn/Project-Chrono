@@ -8,10 +8,8 @@ import (
 //== Generalized expressions
 
 type Expression interface {
+	AST
 	IsComputable() bool // is CTE available?
-	GetNext() AST
-	printAST(level int)
-	String() string
 }
 
 type ValueExpression struct {

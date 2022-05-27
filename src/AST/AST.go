@@ -56,10 +56,9 @@ func (p Parameter) String() string {
 }
 
 type Module struct {
+	Block
 	Name   string
 	Params []Parameter
-	Child  AST
-	Next   AST
 }
 
 // todo: add child and next
@@ -75,19 +74,11 @@ func (m Module) String() string {
 
 	s := "mod:" + m.Name + " (" + params + ")"
 
-	if m.Child != nil {
-		s += "\n  " + m.Child.String()
+	for _, elem := range m.Elements {
+		s += "\n    " + elem.String()
 	}
 
 	return s
-}
-
-func (m Module) GetNext() AST {
-	return m.Next
-}
-
-func (m Module) GetChild() AST {
-	return m.Child
 }
 
 func (m *Module) printAST(level int) {
