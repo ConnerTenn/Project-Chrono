@@ -77,6 +77,58 @@ func parseParam(lex *Lexer) AST.Parameter {
 	return curParam
 }
 
+func parseMathExpression(lex *Lexer) AST.MathExpression {
+	math := AST.MathExpression{}
+
+	parseValue := func() AST.ValueExpression {
+		value := AST.ValueExpression{}
+		t, _ := lex.GetNext()
+
+		value.Value = t.Value
+
+		if t.Type == Iden {
+			value.Var = true
+		} else if t.Type == Literal {
+			value.Var = false
+		} else {
+			displayError(t)
+		}
+
+		return value
+	}
+
+	parseOperation := func() AST.Operation {
+		var op AST.Operation
+		t, _ := lex.GetNext()
+
+		switch t.Value {
+		case "+":
+			op = AST.Add
+		case "-":
+			op = AST.Sub
+		case "*":
+			op = AST.Multi
+		case "/":
+			op = AST.Div
+		case "<<":
+			op = AST.LShift
+		case ">>":
+			op = AST.RShift
+		}
+
+		return op
+	}
+
+	// assume lhs and rhs are values and proper syntax is given
+	math.LHS = parseValue()
+
+	math.Op = parseOperation()
+
+	math.RHS = parseValue()
+
+	return math
+}
+
 func parseModule(lex *Lexer) AST.Module {
 	head := AST.Module{}
 	var t Token
@@ -117,61 +169,8 @@ func parseModule(lex *Lexer) AST.Module {
 	}
 
 	// FIX ME: massive assumptions made to test expression structs
-	// todo: lift out
 	var expTop AST.Expression
 	var expHead AST.Expression
-
-	parseMathExpression := func() AST.MathExpression {
-		math := AST.MathExpression{}
-
-		parseValue := func() AST.ValueExpression {
-			value := AST.ValueExpression{}
-			t, _ := lex.GetNext()
-
-			value.Value = t.Value
-
-			if t.Type == Iden {
-				value.Var = true
-			} else if t.Type == Literal {
-				value.Var = false
-			} else {
-				displayError(t)
-			}
-
-			return value
-		}
-
-		parseOperation := func() AST.Operation {
-			var op AST.Operation
-			t, _ = lex.GetNext()
-
-			switch t.Value {
-			case "+":
-				op = AST.Add
-			case "-":
-				op = AST.Sub
-			case "*":
-				op = AST.Multi
-			case "/":
-				op = AST.Div
-			case "<<":
-				op = AST.LShift
-			case ">>":
-				op = AST.RShift
-			}
-
-			return op
-		}
-
-		// assume lhs and rhs are values and proper syntax is given
-		math.LHS = parseValue()
-
-		math.Op = parseOperation()
-
-		math.RHS = parseValue()
-
-		return math
-	}
 
 	t, _ = lex.GetNext() // drop LCurly
 
@@ -182,7 +181,7 @@ func parseModule(lex *Lexer) AST.Module {
 
 			lex.GetNext() // drop asmt token
 
-			asmt.RHS = parseMathExpression()
+			asmt.RHS = parseMathExpression(lex)
 
 			expHead = &asmt
 		} else {
