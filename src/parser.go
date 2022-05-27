@@ -24,17 +24,11 @@ func parseParam(lex *Lexer) AST.Parameter {
 	// set / get direction
 	switch t.Value {
 	case "in":
-		{
-			curParam.Dir = AST.In
-		}
+		curParam.Dir = AST.In
 	case "out":
-		{
-			curParam.Dir = AST.Out
-		}
+		curParam.Dir = AST.Out
 	case "inout":
-		{
-			curParam.Dir = AST.Inout
-		}
+		curParam.Dir = AST.Inout
 	}
 
 	// set / get param type
