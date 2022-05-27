@@ -120,6 +120,8 @@ func parseMathExpression(lex *Lexer) AST.MathExpression {
 
 	math.RHS = parseValue()
 
+	lex.GetNext() //FIXME: Consume Semicolon
+
 	return math
 }
 
@@ -157,18 +159,21 @@ func parseModule(lex *Lexer) AST.Module {
 	}
 
 	// parse code
-	t, _ = lex.GetNext()
-	if t.Type != LCurly {
+
+	t, _ = lex.PeekNext()
+	if !lex.ExpectNext(LCurly) {
 		displayError(t)
 	}
+	// drop LCurly
+	lex.GetNext()
 
 	// FIX ME: massive assumptions made to test expression structs
-	var expTop AST.Expression
+	// var expTop AST.Expression
 	var expHead AST.Expression
 
-	t, _ = lex.GetNext() // drop LCurly
+	for lex.ExpectNext(Iden) {
+		t, _ = lex.GetNext()
 
-	for {
 		if t.Type == Iden && lex.ExpectNext(Asmt) { // parse assignment
 			asmt := AST.AssignmentExpression{}
 			asmt.Name = t.Value
@@ -182,12 +187,9 @@ func parseModule(lex *Lexer) AST.Module {
 			break
 		}
 
-		if expTop == nil {
-			expTop = expHead
-		}
-	}
+		head.Elements = append(head.Elements, expHead)
 
-	head.Elements = append(head.Elements, expTop)
+	}
 
 	// === FIX ME!!! ===
 	// Temp code
