@@ -7,6 +7,7 @@ import (
 )
 
 // token types split into enum per type for easier parsing (on switch)
+//go:generate stringer -type=TokenType
 type TokenType int
 
 const (
@@ -28,7 +29,7 @@ const (
 	Math
 	Comma
 	Colon
-	Asmt
+	Asmt //Assignment
 	Cmp
 	Unknown
 )
