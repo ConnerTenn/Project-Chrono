@@ -24,7 +24,9 @@ func PrintAST(ast AST) {
 	ast.printAST(0)
 }
 
+//============
 //== Module ==
+//============
 
 //go:generate stringer -type=ParamDir
 type ParamDir int
@@ -84,7 +86,10 @@ func (m *Module) printAST(level int) {
 	}
 }
 
+//===========
 //== Block ==
+//===========
+
 // todo: convert to interface
 type Block struct {
 	idx      int
