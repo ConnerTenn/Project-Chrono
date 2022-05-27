@@ -110,91 +110,91 @@ func parseModule(lex *Lexer) AST.Module {
 		}
 	}
 
-	// parse code
-	t, _ = lex.GetNext()
-	if t.Type != LCurly {
-		displayError(t)
-	}
+	// // parse code
+	// t, _ = lex.GetNext()
+	// if t.Type != LCurly {
+	// 	displayError(t)
+	// }
 
-	// FIX ME: massive assumptions made to test expression structs
-	// todo: lift out
-	var expTop AST.Expression
-	var expHead AST.Expression
+	// // FIX ME: massive assumptions made to test expression structs
+	// // todo: lift out
+	// var expTop AST.Expression
+	// var expHead AST.Expression
 
-	parseMathExpression := func() AST.MathExpression {
-		math := AST.MathExpression{}
+	// parseMathExpression := func() AST.MathExpression {
+	// 	math := AST.MathExpression{}
 
-		parseValue := func() AST.ValueExpression {
-			value := AST.ValueExpression{}
-			t, _ := lex.GetNext()
+	// 	parseValue := func() AST.ValueExpression {
+	// 		value := AST.ValueExpression{}
+	// 		t, _ := lex.GetNext()
 
-			value.Value = t.Value
+	// 		value.Value = t.Value
 
-			if t.Type == Iden {
-				value.Var = true
-			} else if t.Type == Literal {
-				value.Var = false
-			} else {
-				displayError(t)
-			}
+	// 		if t.Type == Iden {
+	// 			value.Var = true
+	// 		} else if t.Type == Literal {
+	// 			value.Var = false
+	// 		} else {
+	// 			displayError(t)
+	// 		}
 
-			return value
-		}
+	// 		return value
+	// 	}
 
-		parseOperation := func() AST.Operation {
-			var op AST.Operation
-			t, _ = lex.GetNext()
+	// 	parseOperation := func() AST.Operation {
+	// 		var op AST.Operation
+	// 		t, _ = lex.GetNext()
 
-			switch t.Value {
-			case "+":
-				op = AST.Add
-			case "-":
-				op = AST.Sub
-			case "*":
-				op = AST.Multi
-			case "/":
-				op = AST.Div
-			case "<<":
-				op = AST.LShift
-			case ">>":
-				op = AST.RShift
-			}
+	// 		switch t.Value {
+	// 		case "+":
+	// 			op = AST.Add
+	// 		case "-":
+	// 			op = AST.Sub
+	// 		case "*":
+	// 			op = AST.Multi
+	// 		case "/":
+	// 			op = AST.Div
+	// 		case "<<":
+	// 			op = AST.LShift
+	// 		case ">>":
+	// 			op = AST.RShift
+	// 		}
 
-			return op
-		}
+	// 		return op
+	// 	}
 
-		// assume lhs and rhs are values and proper syntax is given
-		math.LHS = parseValue()
+	// 	// assume lhs and rhs are values and proper syntax is given
+	// 	math.LHS = parseValue()
 
-		math.Op = parseOperation()
+	// 	math.Op = parseOperation()
 
-		math.RHS = parseValue()
+	// 	math.RHS = parseValue()
 
-		return math
-	}
+	// 	return math
+	// }
 
-	t, _ = lex.GetNext() // drop LCurly
+	// t, _ = lex.GetNext() // drop LCurly
 
-	for {
-		if t.Type == Iden && lex.ExpectNext(Asmt) { // parse assignment
-			asmt := AST.AssignmentExpression{}
-			asmt.Name = t.Value
+	// for {
+	// 	if t.Type == Iden && lex.ExpectNext(Asmt) { // parse assignment
+	// 		asmt := AST.AssignmentExpression{}
+	// 		asmt.Name = t.Value
 
-			lex.GetNext() // drop asmt token
+	// 		lex.GetNext() // drop asmt token
 
-			asmt.RHS = parseMathExpression()
+	// 		asmt.RHS = parseMathExpression()
 
-			expHead = &asmt
-		} else {
-			break
-		}
+	// 		expHead = &asmt
+	// 	} else {
+	// 		break
+	// 	}
 
-		if expTop == nil {
-			expTop = expHead
-		}
-	}
+	// 	if expTop == nil {
+	// 		expTop = expHead
+	// 	}
+	// }
 
-	head.Child = expTop
+	// head.Child = expTop
 
 	// === FIX ME!!! ===
 	// Temp code
@@ -211,19 +211,17 @@ func parseModule(lex *Lexer) AST.Module {
 
 // todo: remove assumptions & add error handling
 // primary parsing function, can make assumptions about inital tokens
-func parseBlock(lex *Lexer) AST.Block {
-	block := AST.Block{}
+func parseBlock(lex *Lexer) AST.AST {
+	var head AST.AST = &AST.Block{}
 
 	for !(lex.ExpectNext(EOL) || lex.ExpectNext(RCurly)) {
-		var next AST.AST
+
 		if lex.ExpectNext(Iden) {
 			m := parseModule(lex)
-			next = &m
+			head.SetAfter(&m)
 		} else {
 			break
 		}
-
-		block.Elements = append(block.Elements, next)
 	}
 
 	//Consume RCurly
@@ -231,10 +229,10 @@ func parseBlock(lex *Lexer) AST.Block {
 		lex.GetNext()
 	}
 
-	return block
+	return head
 }
 
 func Parse(lex *Lexer) AST.AST {
 	ast := parseBlock(lex)
-	return &ast
+	return ast
 }
