@@ -1,23 +1,15 @@
-package main
+package Parser
 
 import (
-	"fmt"
-	"os"
 	"strconv"
 
 	AST "github.com/ConnerTenn/Project-Chrono/AST"
+	L "github.com/ConnerTenn/Project-Chrono/Lexer"
 )
-
-func displayError(t Token) {
-
-	fmt.Println("Unexpected Token: ", t)
-
-	os.Exit(-1)
-}
 
 // use a prat / segmented parser design
 
-func parseParam(lex *Lexer) AST.Parameter {
+func parseParam(lex *L.Lexer) AST.Parameter {
 	t, _ := lex.GetNext()
 	curParam := AST.Parameter{}
 
@@ -32,7 +24,7 @@ func parseParam(lex *Lexer) AST.Parameter {
 	}
 
 	// set / get param type
-	if lex.ExpectNext(Spec) {
+	if lex.ExpectNext(L.Spec) {
 		t, _ = lex.GetNext()
 		curParam.Type = AST.Wire
 		switch t.Value {
@@ -42,11 +34,11 @@ func parseParam(lex *Lexer) AST.Parameter {
 	}
 
 	// set / get bit width
-	if lex.ExpectNext(LBrace) {
+	if lex.ExpectNext(L.LBrace) {
 		lex.GetNext()
 		t, _ = lex.GetNext()
 
-		if t.Type != Literal {
+		if t.Type != L.Literal {
 			displayError(t)
 		}
 
@@ -54,7 +46,7 @@ func parseParam(lex *Lexer) AST.Parameter {
 
 		t, _ = lex.GetNext()
 
-		if t.Type != RBrace {
+		if t.Type != L.RBrace {
 			displayError(t)
 		}
 	}
@@ -62,7 +54,7 @@ func parseParam(lex *Lexer) AST.Parameter {
 	// get / set name
 	t, _ = lex.GetNext()
 
-	if t.Type != Iden {
+	if t.Type != L.Iden {
 		displayError(t)
 	}
 
@@ -71,68 +63,14 @@ func parseParam(lex *Lexer) AST.Parameter {
 	return curParam
 }
 
-func parseMathExpression(lex *Lexer) AST.MathExpression {
-	math := AST.MathExpression{}
-
-	parseValue := func() AST.ValueExpression {
-		value := AST.ValueExpression{}
-		t, _ := lex.GetNext()
-
-		value.Value = t.Value
-
-		if t.Type == Iden {
-			value.Var = true
-		} else if t.Type == Literal {
-			value.Var = false
-		} else {
-			displayError(t)
-		}
-
-		return value
-	}
-
-	parseOperation := func() AST.Operation {
-		var op AST.Operation
-		t, _ := lex.GetNext()
-
-		switch t.Value {
-		case "+":
-			op = AST.Add
-		case "-":
-			op = AST.Sub
-		case "*":
-			op = AST.Multi
-		case "/":
-			op = AST.Div
-		case "<<":
-			op = AST.LShift
-		case ">>":
-			op = AST.RShift
-		}
-
-		return op
-	}
-
-	// assume lhs and rhs are values and proper syntax is given
-	math.LHS = parseValue()
-
-	math.Op = parseOperation()
-
-	math.RHS = parseValue()
-
-	lex.GetNext() //FIXME: Consume Semicolon
-
-	return math
-}
-
-func parseModule(lex *Lexer) AST.Module {
+func parseModule(lex *L.Lexer) AST.Module {
 	head := AST.Module{}
-	var t Token
+	var t L.Token
 
 	t, _ = lex.GetNext() // assumtion first token will be an iden
 	head.Name = t.Value
 
-	if !lex.ExpectNext(LParen) {
+	if !lex.ExpectNext(L.LParen) {
 		t, _ = lex.GetNext()
 		displayError(t)
 	}
@@ -141,7 +79,7 @@ func parseModule(lex *Lexer) AST.Module {
 
 	// build parameters
 	for {
-		if !lex.ExpectNext(Direction) {
+		if !lex.ExpectNext(L.Direction) {
 			break // if the next value isn't a direction, there are no parameters
 		}
 
@@ -151,9 +89,9 @@ func parseModule(lex *Lexer) AST.Module {
 		t, _ = lex.GetNext()
 
 		// check if end of param list
-		if t.Type == RParen {
+		if t.Type == L.RParen {
 			break
-		} else if t.Type != Comma {
+		} else if t.Type != L.Comma {
 			displayError(t)
 		}
 	}
@@ -161,7 +99,7 @@ func parseModule(lex *Lexer) AST.Module {
 	// parse code
 
 	t, _ = lex.PeekNext()
-	if !lex.ExpectNext(LCurly) {
+	if !lex.ExpectNext(L.LCurly) {
 		displayError(t)
 	}
 	// drop LCurly
@@ -171,10 +109,10 @@ func parseModule(lex *Lexer) AST.Module {
 	// var expTop AST.Expression
 	var expHead AST.Expression
 
-	for lex.ExpectNext(Iden) {
+	for lex.ExpectNext(L.Iden) {
 		t, _ = lex.GetNext()
 
-		if t.Type == Iden && lex.ExpectNext(Asmt) { // parse assignment
+		if t.Type == L.Iden && lex.ExpectNext(L.Asmt) { // parse assignment
 			asmt := AST.AssignmentExpression{}
 			asmt.Name = t.Value
 
@@ -194,7 +132,7 @@ func parseModule(lex *Lexer) AST.Module {
 	// === FIX ME!!! ===
 	// Temp code
 	//Consume all until next RCurly
-	for !lex.ExpectNext(RCurly) {
+	for !lex.ExpectNext(L.RCurly) {
 		_, _ = lex.GetNext()
 		//fmt.Println(t)
 	}
@@ -206,12 +144,12 @@ func parseModule(lex *Lexer) AST.Module {
 
 // todo: remove assumptions & add error handling
 // primary parsing function, can make assumptions about inital tokens
-func parseBlock(lex *Lexer) AST.Block {
+func parseBlock(lex *L.Lexer) AST.Block {
 	block := AST.Block{}
 
-	for !(lex.ExpectNext(EOL) || lex.ExpectNext(RCurly)) {
+	for !(lex.ExpectNext(L.EOL) || lex.ExpectNext(L.RCurly)) {
 		var next AST.AST
-		if lex.ExpectNext(Iden) {
+		if lex.ExpectNext(L.Iden) {
 			m := parseModule(lex)
 			next = &m
 		} else {
@@ -222,14 +160,14 @@ func parseBlock(lex *Lexer) AST.Block {
 	}
 
 	//Consume RCurly
-	if lex.ExpectNext(RCurly) {
+	if lex.ExpectNext(L.RCurly) {
 		lex.GetNext()
 	}
 
 	return block
 }
 
-func Parse(lex *Lexer) AST.AST {
+func Parse(lex *L.Lexer) AST.AST {
 	ast := parseBlock(lex)
 	return &ast
 }

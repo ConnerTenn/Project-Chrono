@@ -5,6 +5,8 @@ import (
 	"os"
 
 	AST "github.com/ConnerTenn/Project-Chrono/AST"
+	L "github.com/ConnerTenn/Project-Chrono/Lexer"
+	P "github.com/ConnerTenn/Project-Chrono/Parser"
 )
 
 // todo: add type to hold CLI options, with description for help menu
@@ -36,7 +38,7 @@ func main() {
 
 	// for loop / switch over compiler options?
 
-	lex, err := NewLexer(filename)
+	lex, err := L.NewLexer(filename)
 	if err != nil {
 		fmt.Println("Error:", err)
 	}
@@ -44,7 +46,7 @@ func main() {
 	go lex.Tokenizer()
 
 	// doing this sync for now
-	tree := Parse(&lex)
+	tree := P.Parse(&lex)
 
 	AST.PrintAST(tree)
 }
