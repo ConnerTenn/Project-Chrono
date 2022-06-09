@@ -49,4 +49,8 @@ func main() {
 	tree := P.Parse(&lex)
 
 	AST.PrintAST(tree)
+
+	fmt.Println("\n== Gen Verilog ==")
+	fmt.Println()
+	fmt.Print(tree.WriteVerilog(-1))
 }

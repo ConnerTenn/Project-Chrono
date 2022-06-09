@@ -14,6 +14,7 @@ func Ident(ident int) string {
 type AST interface {
 	printAST(level int)
 	String() string
+	WriteVerilog(ident int) string
 }
 
 func PrintAST(ast AST) {
