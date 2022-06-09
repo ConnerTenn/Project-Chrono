@@ -4,6 +4,19 @@ import (
 	"fmt"
 )
 
+/*
+=== NOTES AND TODO ===
+
+Signals should be an AST object
+
+Expressions should store the AST signal instead of just the signal name as a string.
+This will be necessary for converting the AST into verilog.
+
+Blocks should also keep track of the signals within their scope somehow.
+
+Maybe this could be done during the parsing step, or there could be a second pass that resolves all the names into the actual signals.
+*/
+
 //== Generalized expressions
 
 type Expression interface {
