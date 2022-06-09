@@ -38,7 +38,7 @@ func (expr ValueExpression) WriteVerilog(ident int) string {
 }
 
 func (expr AssignmentExpression) WriteVerilog(ident int) string {
-	return Ident(ident) + expr.Name + " = " + expr.RHS.WriteVerilog(0) + ";"
+	return Ident(ident) + "assign " + expr.Name + " = " + expr.RHS.WriteVerilog(0) + ";"
 }
 
 func (expr MathExpression) WriteVerilog(ident int) string {
