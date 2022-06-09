@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"strings"
 
 	AST "github.com/ConnerTenn/Project-Chrono/AST"
 	L "github.com/ConnerTenn/Project-Chrono/Lexer"
@@ -49,4 +50,30 @@ func main() {
 	tree := P.Parse(&lex)
 
 	AST.PrintAST(tree)
+
+	//== Generate Verilog ==
+	//Configure tabsize
+	AST.IndentCharacters = "    "
+
+	//Generate verilog
+	verilog := tree.WriteVerilog(-1)
+
+	//Print verilog
+	fmt.Println("\n== Gen Verilog ==")
+	fmt.Println()
+	fmt.Print(verilog)
+
+	//Create output file
+	outfilename := strings.TrimSuffix(filename, ".ch") + ".v"
+	fmt.Println("Writing:", outfilename)
+	outfile, err := os.Create(outfilename)
+	if err != nil {
+		fmt.Println("Error:", err)
+	}
+
+	//Write verilog to output file
+	_, err = outfile.WriteString(verilog)
+	if err != nil {
+		fmt.Println("Error:", err)
+	}
 }

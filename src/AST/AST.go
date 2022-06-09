@@ -5,9 +5,16 @@ import (
 	"strings"
 )
 
+var IndentCharacters = "  "
+
+func Ident(ident int) string {
+	return strings.Repeat(IndentCharacters, ident)
+}
+
 type AST interface {
 	printAST(level int)
 	String() string
+	WriteVerilog(ident int) string
 }
 
 func PrintAST(ast AST) {
@@ -68,7 +75,7 @@ func (m Module) String() string {
 }
 
 func (m *Module) printAST(level int) {
-	fmt.Print(strings.Repeat(" ", level*2))
+	fmt.Print(Ident(level))
 	fmt.Println(m)
 
 	for _, elem := range m.Elements {
@@ -90,7 +97,7 @@ func (blk Block) String() string {
 }
 
 func (blk *Block) printAST(level int) {
-	fmt.Print(strings.Repeat(" ", level*2))
+	fmt.Print(Ident(level))
 	fmt.Println(blk)
 
 	for _, elem := range blk.Elements {
