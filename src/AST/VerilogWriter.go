@@ -9,7 +9,17 @@ func (mod Module) WriteVerilog(ident int) string {
 
 	//Generate parameter list
 	for i, param := range mod.Params {
-		str += Ident(ident+1) + param.Dir.String() + " "
+		str += Ident(ident + 1)
+
+		switch param.Dir {
+		case In:
+			str += "input "
+		case Out:
+			str += "output "
+		case Inout:
+			str += "inout "
+		}
+
 		//Only include signal width if the width is > 1
 		if param.Width > 1 {
 			str += "[" + fmt.Sprint(param.Width-1) + ":0] "
