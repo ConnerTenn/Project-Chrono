@@ -47,11 +47,12 @@ func (t Token) String() string {
 
 // keyword list
 var tokenMap = map[string]TokenType{
-	"in":      Direction,
-	"out":     Direction,
-	"inout":   Direction,
-	"wire":    Spec,
-	"reg":     Spec,
+	"in":    Direction,
+	"out":   Direction,
+	"inout": Direction,
+	// "wire":    Spec,
+	// "reg":     Spec,
+	"sig":     Spec,
 	"var":     Spec,
 	"if":      If,
 	"switch":  Switch,

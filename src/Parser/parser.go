@@ -1,6 +1,8 @@
 package Parser
 
 import (
+	"fmt"
+	"os"
 	"strconv"
 
 	AST "github.com/ConnerTenn/Project-Chrono/AST"
@@ -23,15 +25,7 @@ func parseParam(lex *L.Lexer) AST.Signal {
 		curParam.Dir = AST.Inout
 	}
 
-	// set / get param type
-	if lex.ExpectNext(L.Spec) {
-		t, _ = lex.GetNext()
-		curParam.Type = AST.Wire
-		switch t.Value {
-		case "reg":
-			curParam.Type = AST.Reg
-		}
-	}
+	curParam.Type = AST.Wire
 
 	// set / get bit width
 	if lex.ExpectNext(L.LBrace) {
@@ -59,6 +53,33 @@ func parseParam(lex *L.Lexer) AST.Signal {
 	}
 
 	curParam.Name = t.Value
+
+	// get / set clock synchonous
+
+	if lex.ExpectNext(L.Atmark) {
+		lex.GetNext()
+		if lex.ExpectNext(L.LParen) {
+			lex.GetNext()
+		}
+
+		t, _ = lex.GetNext()
+
+		if t.Type != L.Iden {
+			displayError(t)
+		}
+
+		curParam.Clock = t.Value
+		curParam.Type = AST.Reg
+
+		if curParam.Dir != AST.Out {
+			fmt.Printf("Signal of direction %v cannot be a register\n", curParam.Dir)
+			os.Exit(-1)
+		}
+
+		if lex.ExpectNext(L.RParen) {
+			lex.GetNext()
+		}
+	}
 
 	return curParam
 }

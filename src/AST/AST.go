@@ -45,12 +45,16 @@ const (
 
 type Signal struct {
 	Name  string
+	Clock string //FIXME: Should be an expression AST
 	Dir   SignalDir
 	Width int
 	Type  SignalType
 }
 
 func (p Signal) String() string {
+	if p.Type == Reg {
+		return fmt.Sprintf("%s:%s,%s[%d],@%s", p.Name, p.Dir, p.Type, p.Width, p.Clock)
+	}
 	return fmt.Sprintf("%s:%s,%s[%d]", p.Name, p.Dir, p.Type, p.Width)
 }
 
