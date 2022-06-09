@@ -52,6 +52,9 @@ func main() {
 	AST.PrintAST(tree)
 
 	//== Generate Verilog ==
+	//Configure tabsize
+	AST.IndentCharacters = "    "
+
 	//Generate verilog
 	verilog := tree.WriteVerilog(-1)
 

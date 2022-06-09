@@ -5,10 +5,10 @@ import (
 	"strings"
 )
 
-var IndentSpaces = 2
+var IndentCharacters = "  "
 
 func Ident(ident int) string {
-	return strings.Repeat(" ", ident*IndentSpaces)
+	return strings.Repeat(IndentCharacters, ident)
 }
 
 type AST interface {
