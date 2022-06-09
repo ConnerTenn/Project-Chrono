@@ -16,6 +16,8 @@ func (mod Module) WriteVerilog(ident int) string {
 
 	str += ");\n"
 
+	str += mod.Block.WriteVerilog(ident)
+
 	str += "endmodule\n"
 
 	return str
@@ -32,13 +34,29 @@ func (blk Block) WriteVerilog(ident int) string {
 }
 
 func (expr ValueExpression) WriteVerilog(ident int) string {
-	return ""
+	return expr.Value
 }
 
 func (expr AssignmentExpression) WriteVerilog(ident int) string {
-	return ""
+	return Ident(ident) + expr.Name + " = " + expr.RHS.WriteVerilog(0) + ";"
 }
 
 func (expr MathExpression) WriteVerilog(ident int) string {
-	return ""
+	var op string
+	switch expr.Op {
+	case Add:
+		op = " + "
+	case Sub:
+		op = " - "
+	case Multi:
+		op = " * "
+	case Div:
+		op = " / "
+	case LShift:
+		op = " << "
+	case RShift:
+		op = " >> "
+	}
+
+	return expr.LHS.WriteVerilog(0) + op + expr.RHS.WriteVerilog(0)
 }
