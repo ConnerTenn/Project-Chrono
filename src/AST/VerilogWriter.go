@@ -1,11 +1,17 @@
 package AST
 
+import "fmt"
+
 func (mod Module) WriteVerilog(ident int) string {
 	var str string
 	str += "module " + mod.Name + "(\n"
 
 	for i, param := range mod.Params {
-		str += Ident(ident+1) + param.Dir.String() + " " + param.Name
+		str += Ident(ident+1) + param.Dir.String() + " "
+		if param.Width > 1 {
+			str += "[" + fmt.Sprint(param.Width-1) + ":0] "
+		}
+		str += param.Name
 
 		if i == len(mod.Params)-1 {
 			str += "\n"
