@@ -2,7 +2,6 @@ package AST
 
 import (
 	"fmt"
-	"strings"
 )
 
 //== Generalized expressions
@@ -22,7 +21,7 @@ func (v ValueExpression) String() string {
 }
 
 func (v ValueExpression) printAST(level int) {
-	fmt.Print(strings.Repeat(" ", level*2))
+	fmt.Print(Ident(level))
 	fmt.Println(v)
 }
 
@@ -41,7 +40,7 @@ func (ae AssignmentExpression) String() string {
 }
 
 func (ae AssignmentExpression) printAST(level int) {
-	fmt.Print(strings.Repeat(" ", level*2))
+	fmt.Print(Ident(level))
 	fmt.Println(ae)
 }
 
@@ -74,7 +73,7 @@ func (m MathExpression) String() string {
 }
 
 func (m MathExpression) printAST(level int) {
-	fmt.Print(strings.Repeat(" ", level*2))
+	fmt.Print(Ident(level))
 	fmt.Println(m)
 }
 
