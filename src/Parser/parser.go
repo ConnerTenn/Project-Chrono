@@ -9,9 +9,9 @@ import (
 
 // use a prat / segmented parser design
 
-func parseParam(lex *L.Lexer) AST.Parameter {
+func parseParam(lex *L.Lexer) AST.Signal {
 	t, _ := lex.GetNext()
-	curParam := AST.Parameter{}
+	curParam := AST.Signal{}
 
 	// set / get direction
 	switch t.Value {

@@ -22,42 +22,46 @@ func PrintAST(ast AST) {
 }
 
 //============
-//== Module ==
+//== Signal ==
 //============
 
-//go:generate stringer -type=ParamDir
-type ParamDir int
+//go:generate stringer -type=SignalDir
+type SignalDir int
 
 const (
-	In ParamDir = iota
+	In SignalDir = iota
 	Out
 	Inout
 )
 
-//go:generate stringer -type=ParamType
-type ParamType int
+//go:generate stringer -type=SignalType
+type SignalType int
 
 const (
-	Wire ParamType = iota //Default
+	Wire SignalType = iota //Default
 	Reg
 	//Var?
 )
 
-type Parameter struct {
+type Signal struct {
 	Name  string
-	Dir   ParamDir
+	Dir   SignalDir
 	Width int
-	Type  ParamType
+	Type  SignalType
 }
 
-func (p Parameter) String() string {
+func (p Signal) String() string {
 	return fmt.Sprintf("%s:%s,%s[%d]", p.Name, p.Dir, p.Type, p.Width)
 }
+
+//============
+//== Module ==
+//============
 
 type Module struct {
 	Block
 	Name   string
-	Params []Parameter
+	Params []Signal
 }
 
 // todo: add child and next
