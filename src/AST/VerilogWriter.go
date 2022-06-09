@@ -8,9 +8,9 @@ func (mod Module) WriteVerilog(ident int) string {
 		str += Ident(ident+1) + param.Dir.String() + " " + param.Name
 
 		if i == len(mod.Params)-1 {
-			str += ",\n"
-		} else {
 			str += "\n"
+		} else {
+			str += ",\n"
 		}
 	}
 
