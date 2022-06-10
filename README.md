@@ -30,6 +30,41 @@ For this feature, Chrono uses a sequential/parallel paradigm. By default all sta
 
 The powerful comes from the fact that these parallel and sequential blocks can be nested inside each other. Therefore you can have a sequence of nested sequences running in parallel!
 
+```verilog
+//Sequential
+@(Clk)
+{
+    A <= 1;
+    A <= 2;
+
+    //parallel
+    {
+        A <= 3;
+        B <= 5;
+    }
+
+    //parallel
+    {
+        //Sequential
+        @(clk)
+        {
+            A <= 4;
+            A <= 5;
+        }
+        B <= B + 1; //Count while the sequence is running
+    } //Progresses after all contained sequences are done
+
+    A <= 0;
+    B <= 0;
+}
+
+//           __    __    __    __    __    __    __  
+//Clk ______/  \__/  \__/  \__/  \__/  \__/  \__/  \_
+//A   0     1     2     3     4     5     0          
+//B   0                 5     6     7           0    
+```
+[Checkout the wiki for more examples!](https://github.com/ConnerTenn/Project-Chrono/wiki/Sequences)
+
 This should make coding complex operations and interfaces *significantly* easier than it is to do manually in VHDL and Verilog.
 
 </br>
