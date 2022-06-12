@@ -1,99 +1,186 @@
 package AST
 
-import (
-	"fmt"
-	"strings"
-)
+// Using Golangs breakdown of Expression, Statement, and Declaration
 
+// base interface used by all blocks
 type AST interface {
-	printAST(level int)
-	String() string
+	GetPos() [2]int
 }
 
-func PrintAST(ast AST) {
-	ast.printAST(0)
-}
+/* --- Expressions --- */
 
-//============
-//== Module ==
-//============
+// Specifies computation
+type (
+	Expr interface {
+		AST
+		IsComputable() bool // if the expression is evaluatable at compile time
+		exprNode()
+	}
 
-//go:generate stringer -type=ParamDir
-type ParamDir int
+	// An Expression with Syntax errors
+	BadExpr struct {
+		Pos [2]int
+	}
 
-const (
-	In ParamDir = iota
-	Out
-	Inout
+	// Represents an identifier used in computation. Not to be confused with binding
+	Ident struct {
+		Pos  [2]int
+		Name string
+	}
+
+	// Represents a 'literal' or plain text value
+	Literal struct {
+		Pos   [2]int
+		Type  string // to be switched to enum
+		Value string
+	}
+
+	// Expression contained within parens (nested)
+	ParenExpr struct {
+		StartPos [2]int
+		EndPos   [2]int
+		X        Expr // Inner Expression
+	}
+
+	// Represents a function call
+	CallExpr struct {
+		Pos  [2]int
+		Fn   string // Function identifier
+		Args []Expr //List of function arguments
+	}
 )
 
-//go:generate stringer -type=ParamType
-type ParamType int
+func (x *BadExpr) IsComputable() bool   { return false }
+func (x *Ident) IsComputable() bool     { return false }
+func (x *Literal) IsComputable() bool   { return true }
+func (x *ParenExpr) IsComputable() bool { return x.X.IsComputable() }
+func (x *CallExpr) IsComputable() bool  { return false }
 
-const (
-	Wire ParamType = iota //Default
-	Reg
-	//Var?
+func (x *BadExpr) GetPos() [2]int   { return x.Pos }
+func (x *Ident) GetPos() [2]int     { return x.Pos }
+func (x *Literal) GetPos() [2]int   { return x.StartPos }
+func (x *ParenExpr) GetPos() [2]int { return x.Pos }
+func (x *CallExpr) GetPos() [2]int  { return x.Pos }
+
+func (*BadExpr) exprNode()   {}
+func (*Ident) exprNode()     {}
+func (*Literal) exprNode()   {}
+func (*ParenExpr) exprNode() {}
+func (*CallExpr) exprNode()  {}
+
+/* --- Statements --- */
+
+// Controls execution
+type (
+	Stmt interface {
+		AST
+		stmtNode()
+	}
+
+	// Represents a statement with incorrect syntax
+	BadStmt struct {
+		Pos [2]int
+	}
+
+	// A declaration linked to statements
+	DeclStmt struct {
+		Pos  [2]int
+		Decl Decl
+	}
+
+	// Holds an expression to be executed
+	ExprStmt struct {
+		Pos [2]int
+		X   Expr
+	}
+
+	// Represents an assignment
+	AssignStmt struct {
+		Pos [2]int
+		LHS Expr
+		RHS Expr
+	}
+
+	// Represents a block thats a sequence
+	Sequence struct {
+		StartPos [2]int
+		EndPos   [2]int
+		Clk      string
+		Inner    Stmt
+	}
+
+	// a function return
+	ReturnStmt struct {
+		Pos    [2]int
+		Result Expr
+	}
+
+	// A {} block of statements
+	BlockStmt struct {
+		StartPos [2]int
+		EndPos   [2]int
+		StmtList []Stmt
+	}
+
+	// an If conditional
+	IfStmt struct {
+		Pos  [2]int
+		Cond Expr
+		Body Stmt
+		Else Stmt
+	}
+
+	// a looped block
+	LoopStmt struct {
+		Pos  [2]int
+		Cond Expr
+		Body Stmt
+	}
 )
 
-type Parameter struct {
-	Name  string
-	Dir   ParamDir
-	Width int
-	Type  ParamType
-}
+func (s *BadStmt) GetPos() [2]int      { return s.Pos }
+func (s *DeclStmt) GetPos() [2]int     { return s.Pos }
+func (s *ExprStmt) GetPos() [2]int     { return s.Pos }
+func (s *AssignStmt) GetPos() [2]int   { return s.Pos }
+func (s *SequenceStmt) GetPos() [2]int { return s.StartPos }
+func (s *ReturnStmt) GetPos() [2]int   { return s.Pos }
+func (s *BlockStmt) GetPos() [2]int    { return s.StartPos }
+func (s *IfStmt) GetPos() [2]int       { return s.Pos }
+func (s *LoopStmt) GetPos() [2]int     { return s.Pos }
 
-func (p Parameter) String() string {
-	return fmt.Sprintf("%s:%s,%s[%d]", p.Name, p.Dir, p.Type, p.Width)
-}
+func (*BadStmt) stmtNode()      {}
+func (*DeclStmt) stmtNode()     {}
+func (*ExprStmt) stmtNode()     {}
+func (*AssignStmt) stmtNode()   {}
+func (*SequenceStmt) stmtNode() {}
+func (*ReturnStmt) stmtNode()   {}
+func (*BlockStmt) stmtNode()    {}
+func (*IfStmt) stmtNode()       {}
+func (*LoopStmt) stmtNode()     {}
 
-type Module struct {
-	Block
-	Name   string
-	Params []Parameter
-}
+/* --- Declarations --- */
 
-// todo: add child and next
-func (m Module) String() string {
-	var params string
-	for i, param := range m.Params {
-		//Add space between parameters
-		if i != 0 {
-			params += " "
-		}
-		params += param.String()
+// Binding of identifiers
+type (
+	Decl interface {
+		AST
+		declNode()
 	}
 
-	return "mod:" + m.Name + " (" + params + ")"
-}
-
-func (m *Module) printAST(level int) {
-	fmt.Print(strings.Repeat(" ", level*2))
-	fmt.Println(m)
-
-	for _, elem := range m.Elements {
-		elem.printAST(level + 1)
+	ValueDecl struct {
+		Name  Ident
+		Type  string // FIXME
+		Value Expr
 	}
-}
 
-//===========
-//== Block ==
-//===========
-
-// todo: convert to interface
-type Block struct {
-	Elements []AST
-}
-
-func (blk Block) String() string {
-	return "Block"
-}
-
-func (blk *Block) printAST(level int) {
-	fmt.Print(strings.Repeat(" ", level*2))
-	fmt.Println(blk)
-
-	for _, elem := range blk.Elements {
-		elem.printAST(level + 1)
+	ModuleDecl struct {
+		Name Ident
+		//Params []Param
 	}
-}
+)
+
+func (d *ValueDecl) GetPos() [2]int  { return Name.GetPos() }
+func (d *ModuleDecl) GetPos() [2]int { return Name.GetPos() }
+
+func (*ValueDecl) declNode()  {}
+func (*ModuleDecl) declNode() {}
