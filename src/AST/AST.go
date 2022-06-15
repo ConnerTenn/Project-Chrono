@@ -48,6 +48,14 @@ type (
 		Fn   string // Function identifier
 		Args []Expr //List of function arguments
 	}
+
+	// Represents a math calculation
+	MathStmt struct {
+		Pos [2]int
+		LHS Expr
+		RHS Expr
+		Op  Operation
+	}
 )
 
 func (x *BadExpr) IsComputable() bool   { return false }
@@ -55,18 +63,33 @@ func (x *Ident) IsComputable() bool     { return false }
 func (x *Literal) IsComputable() bool   { return true }
 func (x *ParenExpr) IsComputable() bool { return x.X.IsComputable() }
 func (x *CallExpr) IsComputable() bool  { return false }
+func (x *MathStmt) IsComputable() bool  { return false }
 
 func (x *BadExpr) GetPos() [2]int   { return x.Pos }
 func (x *Ident) GetPos() [2]int     { return x.Pos }
 func (x *Literal) GetPos() [2]int   { return x.Pos }
 func (x *ParenExpr) GetPos() [2]int { return x.StartPos }
 func (x *CallExpr) GetPos() [2]int  { return x.Pos }
+func (x *MathStmt) GetPos() [2]int  { return x.Pos }
 
 func (*BadExpr) exprNode()   {}
 func (*Ident) exprNode()     {}
 func (*Literal) exprNode()   {}
 func (*ParenExpr) exprNode() {}
 func (*CallExpr) exprNode()  {}
+func (*MathStmt) exprNode()  {}
+
+//go:generate stringer -type=Operation
+type Operation int
+
+const (
+	Add Operation = iota
+	Sub
+	Multi
+	Div
+	LShift
+	RShift
+)
 
 /* --- Statements --- */
 
@@ -187,6 +210,7 @@ type (
 	ModuleDecl struct {
 		Name   Ident
 		Params []ParamDecl
+		Block  BlockStmt
 	}
 )
 
