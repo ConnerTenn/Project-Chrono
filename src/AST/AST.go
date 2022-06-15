@@ -173,11 +173,15 @@ type (
 		Value Expr
 	}
 
-	ParamDecl struct {
+	SignalDecl struct {
 		Name  Ident
-		Dir   ParamDir
 		Width int
 		Type  ParamType
+	}
+
+	ParamDecl struct { //Extends SignalDecl
+		SignalDecl
+		Dir ParamDir
 	}
 
 	ModuleDecl struct {
