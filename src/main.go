@@ -47,5 +47,8 @@ func main() {
 	// doing this sync for now
 	tree := P.Parse(&lex)
 
-	fmt.Println(tree)
+	for _, elem := range tree {
+		fmt.Println(elem)
+		fmt.Println()
+	}
 }

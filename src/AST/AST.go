@@ -1,5 +1,7 @@
 package AST
 
+import "fmt"
+
 // Using Golangs breakdown of Expression, Statement, and Declaration
 
 // base interface used by all blocks
@@ -199,7 +201,7 @@ type (
 	SignalDecl struct {
 		Name  Ident
 		Width int
-		Type  ParamType
+		Type  SignalType
 	}
 
 	ParamDecl struct { //Extends SignalDecl
@@ -223,11 +225,11 @@ const (
 	Inout
 )
 
-//go:generate stringer -type=ParamType
-type ParamType int
+//go:generate stringer -type=SignalType
+type SignalType int
 
 const (
-	Wire ParamType = iota //Default
+	Wire SignalType = iota //Default
 	Reg
 	//Var?
 )
@@ -238,3 +240,36 @@ func (d ModuleDecl) GetPos() [2]int { return d.Name.GetPos() }
 func (*ValueDecl) declNode()  {}
 func (*ParamDecl) declNode()  {}
 func (*ModuleDecl) declNode() {}
+
+func (d SignalDecl) String() string {
+	var str string
+	str += d.Type.String() + " "
+	if d.Width > 1 {
+		str += "[" + fmt.Sprint(d.Width) + "] "
+	}
+	str += d.Name.Name
+
+	return str
+}
+
+func (d ParamDecl) String() string {
+	var str string
+	str += d.Dir.String() + " "
+	str += d.SignalDecl.String()
+	return str
+}
+
+func (d ModuleDecl) String() string {
+	var str string
+	str += d.Name.Name
+	str += "("
+	for i, param := range d.Params {
+		str += param.String()
+		if i < len(d.Params)-1 {
+			str += ", "
+		}
+	}
+	str += ") "
+
+	return str
+}
