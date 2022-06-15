@@ -22,7 +22,7 @@ type (
 		Pos [2]int
 	}
 
-	// Represents an identifier used in computation. Not to be confused with binding
+	// Represents an identifier used in computation
 	Ident struct {
 		Pos  [2]int
 		Name string
@@ -58,8 +58,8 @@ func (x *CallExpr) IsComputable() bool  { return false }
 
 func (x *BadExpr) GetPos() [2]int   { return x.Pos }
 func (x *Ident) GetPos() [2]int     { return x.Pos }
-func (x *Literal) GetPos() [2]int   { return x.StartPos }
-func (x *ParenExpr) GetPos() [2]int { return x.Pos }
+func (x *Literal) GetPos() [2]int   { return x.Pos }
+func (x *ParenExpr) GetPos() [2]int { return x.StartPos }
 func (x *CallExpr) GetPos() [2]int  { return x.Pos }
 
 func (*BadExpr) exprNode()   {}
@@ -102,7 +102,7 @@ type (
 	}
 
 	// Represents a block thats a sequence
-	Sequence struct {
+	SequenceStmt struct {
 		StartPos [2]int
 		EndPos   [2]int
 		Clk      string
@@ -173,14 +173,40 @@ type (
 		Value Expr
 	}
 
+	ParamDecl struct {
+		Name  Ident
+		Dir   ParamDir
+		Width int
+		Type  ParamType
+	}
+
 	ModuleDecl struct {
-		Name Ident
-		//Params []Param
+		Name   Ident
+		Params []ParamDecl
 	}
 )
 
-func (d *ValueDecl) GetPos() [2]int  { return Name.GetPos() }
-func (d *ModuleDecl) GetPos() [2]int { return Name.GetPos() }
+//go:generate stringer -type=ParamDir
+type ParamDir int
+
+const (
+	In ParamDir = iota
+	Out
+	Inout
+)
+
+//go:generate stringer -type=ParamType
+type ParamType int
+
+const (
+	Wire ParamType = iota //Default
+	Reg
+	//Var?
+)
+
+func (d ValueDecl) GetPos() [2]int  { return d.Name.GetPos() }
+func (d ModuleDecl) GetPos() [2]int { return d.Name.GetPos() }
 
 func (*ValueDecl) declNode()  {}
+func (*ParamDecl) declNode()  {}
 func (*ModuleDecl) declNode() {}
