@@ -48,7 +48,7 @@ func main() {
 	tree := P.Parse(&lex)
 
 	for _, elem := range tree {
-		fmt.Println(elem)
+		fmt.Print(elem)
 		fmt.Println()
 	}
 }

@@ -1,6 +1,9 @@
 package AST
 
-import "fmt"
+import (
+	"fmt"
+	"strings"
+)
 
 // Using Golangs breakdown of Expression, Statement, and Declaration
 
@@ -17,6 +20,7 @@ type (
 		AST
 		IsComputable() bool // if the expression is evaluatable at compile time
 		exprNode()
+		String() string
 	}
 
 	// An Expression with Syntax errors
@@ -81,6 +85,24 @@ func (*ParenExpr) exprNode() {}
 func (*CallExpr) exprNode()  {}
 func (*MathStmt) exprNode()  {}
 
+func (x Ident) String() string {
+	return x.Name
+}
+
+func (x Literal) String() string {
+	return x.Value
+}
+
+func (x MathStmt) String() string {
+	var str string
+
+	str += x.LHS.String() + " "
+	str += x.Op.String() + " "
+	str += x.RHS.String()
+
+	return str
+}
+
 //go:generate stringer -type=Operation
 type Operation int
 
@@ -100,6 +122,7 @@ type (
 	Stmt interface {
 		AST
 		stmtNode()
+		String() string
 	}
 
 	// Represents a statement with incorrect syntax
@@ -182,6 +205,27 @@ func (*ReturnStmt) stmtNode()   {}
 func (*BlockStmt) stmtNode()    {}
 func (*IfStmt) stmtNode()       {}
 func (*LoopStmt) stmtNode()     {}
+
+func (s AssignStmt) String() string {
+	var str string
+
+	str += s.LHS.String()
+	str += " = "
+	str += s.RHS.String()
+
+	return str
+}
+
+func (s BlockStmt) String() string { return s.StringIdent(0) }
+func (s BlockStmt) StringIdent(level int) string {
+	var str string
+
+	for _, stmt := range s.StmtList {
+		str += strings.Repeat("  ", level) + stmt.String() + "\n"
+	}
+
+	return str
+}
 
 /* --- Declarations --- */
 
@@ -269,7 +313,9 @@ func (d ModuleDecl) String() string {
 			str += ", "
 		}
 	}
-	str += ") "
+	str += ")\n"
+
+	str += d.Block.StringIdent(1)
 
 	return str
 }
