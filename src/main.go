@@ -5,7 +5,7 @@ import (
 	"os"
 
 	L "github.com/ConnerTenn/Project-Chrono/Lexer"
-  P "github.com/ConnerTenn/Project-Chrono/Parser"
+	P "github.com/ConnerTenn/Project-Chrono/Parser"
 )
 
 // todo: add type to hold CLI options, with description for help menu
@@ -45,7 +45,7 @@ func main() {
 	go lex.Tokenizer()
 
 	// doing this sync for now
-  tree := P.Parse(&lex)
+	tree := P.Parse(&lex)
 
 	fmt.Println(tree)
 }

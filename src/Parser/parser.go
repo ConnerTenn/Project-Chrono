@@ -1,50 +1,51 @@
 package Parser
 
 import (
-  "strconv"
-  L "github.com/ConnerTenn/Project-Chrono/Lexer"
-  AST "github.com/ConnerTenn/Project-Chrono/AST"
+	"strconv"
+
+	AST "github.com/ConnerTenn/Project-Chrono/AST"
+	L "github.com/ConnerTenn/Project-Chrono/Lexer"
 )
 
 // entry parsing function
 func Parse(lex *L.Lexer) []AST.AST {
-  var tree []AST.AST
+	var tree []AST.AST
 
-  for lex.NextExists() {
-    // dispatches to top level declarations
-    curToken, _ := lex.GetNext()
-    //nextToken, _ := lex.PeekNext()
+	for lex.NextExists() {
+		// dispatches to top level declarations
+		curToken, _ := lex.GetNext()
+		//nextToken, _ := lex.PeekNext()
 
-    // FIXME: assume module
-    tree = append(tree, parseModule(lex, curToken))
+		// FIXME: assume module
+		tree = append(tree, parseModule(lex, curToken))
 
-  }
+	}
 
-  return tree
+	return tree
 }
 
 func parseModule(lex *L.Lexer, t L.Token) AST.ModuleDecl {
-  newModule := AST.ModuleDecl{}
+	newModule := AST.ModuleDecl{}
 
-  newModule.Name = parseIdent(t)
-  t, _ = lex.GetNext()
-  if t.Type != L.LParen {
-    // TODO : Add BadExpr?
-    displayError("Did not find LParen to open module parameters", t, L.LParen)
-  }
+	newModule.Name = parseIdent(t)
+	t, _ = lex.GetNext()
+	if t.Type != L.LParen {
+		// TODO : Add BadExpr?
+		displayError("Did not find LParen to open module parameters", t, L.LParen)
+	}
 
-  // build parameters
-  t, _ = lex.GetNext() // drop LParen
-  for t.Type != L.RParen {
-    newModule.Params = append(newModule.Params, parseParam(lex, t))
+	// build parameters
+	t, _ = lex.GetNext() // drop LParen
+	for t.Type != L.RParen {
+		newModule.Params = append(newModule.Params, parseParam(lex, t))
 
-    t, _ = lex.GetNext() // get next
-    if t.Type == L.Comma {
-      t, _ = lex.GetNext() // drop comma
-    }
-  }
+		t, _ = lex.GetNext() // get next
+		if t.Type == L.Comma {
+			t, _ = lex.GetNext() // drop comma
+		}
+	}
 
-  return newModule
+	return newModule
 }
 
 func parseParam(lex *L.Lexer, t L.Token) AST.ParamDecl {
@@ -97,9 +98,9 @@ func parseParam(lex *L.Lexer, t L.Token) AST.ParamDecl {
 }
 
 func parseIdent(t L.Token) AST.Ident {
-  if t.Type != L.Iden {
-    displayError("Could not parse identifier", t, L.Iden)
-  }
+	if t.Type != L.Iden {
+		displayError("Could not parse identifier", t, L.Iden)
+	}
 
-  return AST.Ident{t.Pos, t.Value}
+	return AST.Ident{t.Pos, t.Value}
 }

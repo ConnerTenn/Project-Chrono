@@ -17,7 +17,7 @@ func displayTokenError(t L.Token) {
 func displayError(context string, recievedToken L.Token, expected L.TokenType) {
 
 	fmt.Println("Error Parsing:", context,
-      "\nRecieved:", recievedToken, "\nExpected:", expected)
+		"\nRecieved:", recievedToken, "\nExpected:", expected)
 
 	os.Exit(-1)
 }
