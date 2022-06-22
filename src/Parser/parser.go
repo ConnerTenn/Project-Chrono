@@ -130,8 +130,8 @@ func createExpression(pn chan L.Token) AST.Expr {
 	head := <-pn
 	if isOperation(head) {
 		op := parseOperation(head)
-		lhs := createExpression(pn)
 		rhs := createExpression(pn)
+		lhs := createExpression(pn)
 		return &AST.MathStmt{Pos: head.Pos, LHS: lhs, RHS: rhs, Op: op}
 	}
 	switch head.Type {
@@ -179,12 +179,6 @@ func parseStatement(lex *L.Lexer) AST.Stmt {
 					opStack = opStack[:len(opStack)-1]
 				}
 			}
-			// op := parseOperation(t)
-			// last := rpn[len(rpn)-1]
-
-			// //If op comes before
-			// if OpCmp(op,
-			// rpn = append(rpn, t)
 			opStack = append(opStack, t)
 		} else {
 			displayError("Unknown token", t, L.EOL)
