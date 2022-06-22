@@ -107,12 +107,14 @@ func (x MathStmt) String() string {
 type Operation int
 
 const (
-	Add Operation = iota
+	Asmt Operation = iota
+	Add
 	Sub
 	Multi
 	Div
 	LShift
 	RShift
+	Bracket
 )
 
 /* --- Statements --- */
@@ -206,6 +208,7 @@ func (*BlockStmt) stmtNode()    {}
 func (*IfStmt) stmtNode()       {}
 func (*LoopStmt) stmtNode()     {}
 
+func (s *BadStmt) String() string { return "BAD STATEMENT" }
 func (s AssignStmt) String() string {
 	var str string
 

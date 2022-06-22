@@ -8,17 +8,19 @@ func _() {
 	// An "invalid array index" compiler error signifies that the constant values have changed.
 	// Re-run the stringer command to generate them again.
 	var x [1]struct{}
-	_ = x[Add-0]
-	_ = x[Sub-1]
-	_ = x[Multi-2]
-	_ = x[Div-3]
-	_ = x[LShift-4]
-	_ = x[RShift-5]
+	_ = x[Asmt-0]
+	_ = x[Add-1]
+	_ = x[Sub-2]
+	_ = x[Multi-3]
+	_ = x[Div-4]
+	_ = x[LShift-5]
+	_ = x[RShift-6]
+	_ = x[Bracket-7]
 }
 
-const _Operation_name = "AddSubMultiDivLShiftRShift"
+const _Operation_name = "AsmtAddSubMultiDivLShiftRShiftBracket"
 
-var _Operation_index = [...]uint8{0, 3, 6, 11, 14, 20, 26}
+var _Operation_index = [...]uint8{0, 4, 7, 10, 15, 18, 24, 30, 37}
 
 func (i Operation) String() string {
 	if i < 0 || i >= Operation(len(_Operation_index)-1) {

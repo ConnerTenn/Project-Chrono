@@ -1,6 +1,7 @@
 package Parser
 
 import (
+	"fmt"
 	"strconv"
 
 	AST "github.com/ConnerTenn/Project-Chrono/AST"
@@ -128,59 +129,66 @@ func parseBlock(lex *L.Lexer) AST.BlockStmt {
 
 //FIXME : Definitely a lot to be added here
 func parseStatement(lex *L.Lexer) AST.Stmt {
-	var assign AST.AssignStmt
+	var rpn []L.Token
+	var opStack []L.Token
 
 	t, _ := lex.GetNext()
-	if t.Type != L.Iden {
-		displayError("Expected identifier at the start of a statement", t, L.Iden)
-	}
-	assign.LHS = &AST.Ident{Name: t.Value, Pos: t.Pos}
+	for t.Type != L.EOL {
+		if t.Type == L.Iden {
+			rpn = append(rpn, t)
+		} else if t.Type == L.Literal {
+			rpn = append(rpn, t)
+		} else if t.Type == L.Asmt {
+			opStack = append(opStack, t)
+		} else if t.Type == L.Math {
+			if len(opStack) > 0 {
+				op1 := parseOperation(opStack[len(opStack)-1])
+				op2 := parseOperation(t)
+				//If op on the opStack is higher precedence, place into the rpn immediately
+				if OpCmp(op1, op2) > 0 {
+					rpn = append(rpn, opStack[len(opStack)-1])
+					opStack = opStack[:len(opStack)-1]
+				}
+			}
+			// op := parseOperation(t)
+			// last := rpn[len(rpn)-1]
 
-	t, _ = lex.GetNext()
-	if t.Type != L.Asmt {
-		displayError("Expected '=' to follow an identifier", t, L.Iden)
-	}
+			// //If op comes before
+			// if OpCmp(op,
+			// rpn = append(rpn, t)
+			opStack = append(opStack, t)
+		} else {
+			displayError("Unknown token", t, L.EOL)
+		}
 
-	var equation AST.MathStmt
-	t, _ = lex.GetNext()
-	if t.Type == L.Iden {
-		equation.LHS = &AST.Ident{Name: t.Value, Pos: t.Pos}
-	} else if t.Type == L.Literal {
-		equation.LHS = &AST.Literal{Value: t.Value, Pos: t.Pos}
-	} else {
-		displayError("Expected identifier/literal in equation", t, L.Iden)
-	}
-
-	equation.Op = parseOperation(lex)
-
-	t, _ = lex.GetNext()
-	if t.Type == L.Iden {
-		equation.RHS = &AST.Ident{Name: t.Value, Pos: t.Pos}
-	} else if t.Type == L.Literal {
-		equation.RHS = &AST.Literal{Value: t.Value, Pos: t.Pos}
-	} else {
-		displayError("Expected identifier/literal in equation", t, L.Iden)
-	}
-
-	assign.RHS = &equation
-
-	t, _ = lex.GetNext()
-	if t.Type != L.EOL {
-		displayError("Expected ';' at the end of a statement", t, L.Iden)
+		t, _ = lex.GetNext()
 	}
 
-	return &assign
+	for i := len(opStack) - 1; i >= 0; i-- {
+		rpn = append(rpn, opStack[i])
+	}
+
+	fmt.Println(rpn)
+
+	if rpn[len(rpn)-1].Type != L.Asmt {
+		displayError("Expected assignment expression", rpn[len(rpn)-1], L.Asmt)
+	}
+
+	return &AST.BadStmt{}
 }
 
-func parseOperation(lex *L.Lexer) AST.Operation {
-	t, _ := lex.GetNext()
-	if t.Type != L.Math {
+func parseOperation(t L.Token) AST.Operation {
+	if t.Type != L.Math && t.Type != L.Asmt && t.Type != L.LBrace && t.Type != L.RBrace {
 		displayError("Expected operator in equation", t, L.Math)
 	}
 
 	var op AST.Operation
 
 	switch t.Value {
+	case "=":
+		op = AST.Asmt
+	case "<=":
+		op = AST.Asmt
 	case "+":
 		op = AST.Add
 	case "-":
@@ -193,7 +201,16 @@ func parseOperation(lex *L.Lexer) AST.Operation {
 		op = AST.LShift
 	case ">>":
 		op = AST.RShift
+	case "(":
+		op = AST.Bracket
+	case ")":
+		op = AST.Bracket
 	}
 
 	return op
+}
+
+func OpCmp(op1 AST.Operation, op2 AST.Operation) int {
+	fmt.Println(op1, " : ", op2)
+	return int(op1 - op2)
 }
