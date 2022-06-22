@@ -190,8 +190,8 @@ func parseStatement(lex *L.Lexer) AST.Stmt {
 			if len(opStack) > 0 {
 				op1 := parseOperation(opStack[len(opStack)-1])
 				op2 := parseOperation(t)
-				//If op on the opStack is higher precedence, place into the rpn immediately
-				if op1 != AST.Bracket && OpCmp(op1, op2) > 0 {
+				//If op on the opStack is higher (or equal) precedence, place into the rpn immediately
+				if op1 != AST.Bracket && OpCmp(op1, op2) >= 0 {
 					rpn = append(rpn, opStack[len(opStack)-1])
 					opStack = opStack[:len(opStack)-1]
 				}
