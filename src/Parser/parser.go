@@ -106,7 +106,7 @@ func parseIdent(t L.Token) AST.Ident {
 		displayError("Could not parse identifier", t, L.Iden)
 	}
 
-	return AST.Ident{t.Pos, t.Value}
+	return AST.Ident{Pos: t.Pos, Name: t.Value}
 }
 
 func parseBlock(lex *L.Lexer) AST.BlockStmt {
@@ -125,14 +125,20 @@ func parseBlock(lex *L.Lexer) AST.BlockStmt {
 	blk.EndPos = t.Pos
 	return blk
 }
-func createExpression(pn chan L.Token) AST.Expr {
-	head := <-pn
+
+//fpn: Forward polish notation
+func createExpression(fpn chan L.Token) AST.Expr {
+	head := <-fpn
 	if isOperation(head) {
 		op := parseOperation(head)
-		rhs := createExpression(pn)
-		lhs := createExpression(pn)
+		//Recursively collect the RHS
+		rhs := createExpression(fpn)
+		//Recursively collect the LHS
+		lhs := createExpression(fpn)
 		return &AST.MathStmt{Pos: head.Pos, LHS: lhs, RHS: rhs, Op: op}
 	}
+
+	//If this isn't an operation, it must be an Iden or a Literal
 	switch head.Type {
 	case L.Iden:
 		return &AST.Ident{Pos: head.Pos, Name: head.Value}
@@ -143,13 +149,17 @@ func createExpression(pn chan L.Token) AST.Expr {
 	}
 }
 
-func createStatement(pn chan L.Token) AST.Stmt {
-	head := <-pn
+//fpn: Forward polish notation
+func createStatement(fpn chan L.Token) AST.Stmt {
+	head := <-fpn
+
 	op := parseOperation(head)
 	switch op {
 	case AST.Asmt:
-		rhs := createExpression(pn)
-		lhs := createExpression(pn)
+		//Recursively collect the RHS
+		rhs := createExpression(fpn)
+		//Recursively collect the LHS
+		lhs := createExpression(fpn)
 		return &AST.AssignStmt{Pos: head.Pos, LHS: lhs, RHS: rhs}
 	}
 	return &AST.BadStmt{}
@@ -157,7 +167,9 @@ func createStatement(pn chan L.Token) AST.Stmt {
 
 //FIXME : Definitely a lot to be added here
 func parseStatement(lex *L.Lexer) AST.Stmt {
+	//Reverse polish notation buffer
 	var rpn []L.Token
+	//Stack for storing the operators
 	var opStack []L.Token
 
 	t, _ := lex.GetNext()
@@ -170,17 +182,21 @@ func parseStatement(lex *L.Lexer) AST.Stmt {
 			rpn = append(rpn, t)
 
 		} else if t.Type == L.Asmt {
+			//Assignments always go directly onto the opStack (Since it is the lowest precedence)
 			opStack = append(opStack, t)
 
 		} else if t.Type == L.LParen {
+			//LParen always goes directly onto stack as a marker for when RParen is found
 			opStack = append(opStack, t)
 
 		} else if t.Type == L.RParen {
-			// Place all operations till the previous LParen onto the rpn stack
+			//Place all operations till the previous LParen onto the rpn stack
 			op := opStack[len(opStack)-1]
 			for op.Type != L.LParen {
+				//Pop off opStack and place into rpn
 				rpn = append(rpn, op)
 				opStack = opStack[:len(opStack)-1]
+
 				op = opStack[len(opStack)-1]
 			}
 			//Remove LParen from opStack
@@ -211,17 +227,18 @@ func parseStatement(lex *L.Lexer) AST.Stmt {
 
 	// fmt.Println(rpn)
 
+	//FIXME: Assume expression is an assignment
 	if rpn[len(rpn)-1].Type != L.Asmt {
 		displayError("Expected assignment expression", rpn[len(rpn)-1], L.Asmt)
 	}
 
-	pn := make(chan L.Token, len(rpn))
-
+	//Convert rpn into a forward polish notation as a channel acting as a fifo
+	fpn := make(chan L.Token, len(rpn))
 	for i := len(rpn) - 1; i >= 0; i-- {
-		pn <- rpn[i]
+		fpn <- rpn[i]
 	}
 
-	return createStatement(pn)
+	return createStatement(fpn)
 }
 
 func isOperation(t L.Token) bool {
