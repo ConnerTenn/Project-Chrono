@@ -126,6 +126,35 @@ func parseBlock(lex *L.Lexer) AST.BlockStmt {
 	blk.EndPos = t.Pos
 	return blk
 }
+func createExpression(pn chan L.Token) AST.Expr {
+	head := <-pn
+	if isOperation(head) {
+		op := parseOperation(head)
+		lhs := createExpression(pn)
+		rhs := createExpression(pn)
+		return &AST.MathStmt{Pos: head.Pos, LHS: lhs, RHS: rhs, Op: op}
+	}
+	switch head.Type {
+	case L.Iden:
+		return &AST.Ident{Pos: head.Pos, Name: head.Value}
+	case L.Literal:
+		return &AST.Literal{Pos: head.Pos, Type: head.Type.String(), Value: head.Value}
+	default:
+		return &AST.BadExpr{}
+	}
+}
+
+func createStatement(pn chan L.Token) AST.Stmt {
+	head := <-pn
+	op := parseOperation(head)
+	switch op {
+	case AST.Asmt:
+		rhs := createExpression(pn)
+		lhs := createExpression(pn)
+		return &AST.AssignStmt{Pos: head.Pos, LHS: lhs, RHS: rhs}
+	}
+	return &AST.BadStmt{}
+}
 
 //FIXME : Definitely a lot to be added here
 func parseStatement(lex *L.Lexer) AST.Stmt {
@@ -174,11 +203,24 @@ func parseStatement(lex *L.Lexer) AST.Stmt {
 		displayError("Expected assignment expression", rpn[len(rpn)-1], L.Asmt)
 	}
 
-	return &AST.BadStmt{}
+	pn := make(chan L.Token, len(rpn))
+
+	for i := len(rpn) - 1; i >= 0; i-- {
+		pn <- rpn[i]
+	}
+
+	return createStatement(pn)
+}
+
+func isOperation(t L.Token) bool {
+	if t.Type != L.Math && t.Type != L.Asmt && t.Type != L.LBrace && t.Type != L.RBrace {
+		return false
+	}
+	return true
 }
 
 func parseOperation(t L.Token) AST.Operation {
-	if t.Type != L.Math && t.Type != L.Asmt && t.Type != L.LBrace && t.Type != L.RBrace {
+	if !isOperation(t) {
 		displayError("Expected operator in equation", t, L.Math)
 	}
 

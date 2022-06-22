@@ -85,6 +85,7 @@ func (*ParenExpr) exprNode() {}
 func (*CallExpr) exprNode()  {}
 func (*MathStmt) exprNode()  {}
 
+func (s *BadExpr) String() string { return "BAD EXPRESSION" }
 func (x Ident) String() string {
 	return x.Name
 }
