@@ -97,9 +97,9 @@ func (x Literal) String() string {
 func (x MathStmt) String() string {
 	var str string
 
-	str += x.LHS.String() + " "
+	str += "(" + x.LHS.String() + " "
 	str += x.Op.String() + " "
-	str += x.RHS.String()
+	str += x.RHS.String() + ")"
 
 	return str
 }
@@ -108,14 +108,14 @@ func (x MathStmt) String() string {
 type Operation int
 
 const (
-	Asmt Operation = iota
-	Add
-	Sub
-	Multi
-	Div
-	LShift
+	Asmt   Operation = 0
+	LShift Operation = 1
 	RShift
-	Bracket
+	Add Operation = 2
+	Sub
+	Multi Operation = 3
+	Div
+	Bracket Operation = 5
 )
 
 /* --- Statements --- */

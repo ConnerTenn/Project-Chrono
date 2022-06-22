@@ -9,22 +9,31 @@ func _() {
 	// Re-run the stringer command to generate them again.
 	var x [1]struct{}
 	_ = x[Asmt-0]
-	_ = x[Add-1]
+	_ = x[LShift-1]
+	_ = x[RShift-1]
+	_ = x[Add-2]
 	_ = x[Sub-2]
 	_ = x[Multi-3]
-	_ = x[Div-4]
-	_ = x[LShift-5]
-	_ = x[RShift-6]
-	_ = x[Bracket-7]
+	_ = x[Div-3]
+	_ = x[Bracket-5]
 }
 
-const _Operation_name = "AsmtAddSubMultiDivLShiftRShiftBracket"
+const (
+	_Operation_name_0 = "AsmtLShiftAddMulti"
+	_Operation_name_1 = "Bracket"
+)
 
-var _Operation_index = [...]uint8{0, 4, 7, 10, 15, 18, 24, 30, 37}
+var (
+	_Operation_index_0 = [...]uint8{0, 4, 10, 13, 18}
+)
 
 func (i Operation) String() string {
-	if i < 0 || i >= Operation(len(_Operation_index)-1) {
+	switch {
+	case 0 <= i && i <= 3:
+		return _Operation_name_0[_Operation_index_0[i]:_Operation_index_0[i+1]]
+	case i == 5:
+		return _Operation_name_1
+	default:
 		return "Operation(" + strconv.FormatInt(int64(i), 10) + ")"
 	}
-	return _Operation_name[_Operation_index[i]:_Operation_index[i+1]]
 }
