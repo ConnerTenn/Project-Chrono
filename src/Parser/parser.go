@@ -265,5 +265,5 @@ func parseOperation(t L.Token) AST.Operation {
 }
 
 func OpCmp(op1 AST.Operation, op2 AST.Operation) int {
-	return int(op1 - op2)
+	return AST.Precedence[op1] - AST.Precedence[op2]
 }

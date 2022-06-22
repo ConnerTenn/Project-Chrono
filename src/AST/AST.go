@@ -108,15 +108,26 @@ func (x MathStmt) String() string {
 type Operation int
 
 const (
-	Asmt   Operation = 0
-	LShift Operation = 1
+	Asmt Operation = iota
+	LShift
 	RShift
-	Add Operation = 2
+	Add
 	Sub
-	Multi Operation = 3
+	Multi
 	Div
-	Bracket Operation = 5
+	Bracket
 )
+
+var Precedence = map[Operation]int{
+	Asmt:    0,
+	LShift:  1,
+	RShift:  1,
+	Add:     2,
+	Sub:     2,
+	Multi:   3,
+	Div:     3,
+	Bracket: 4,
+}
 
 /* --- Statements --- */
 

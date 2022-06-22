@@ -1,7 +1,7 @@
 
 Adder(in [8] A, in [8] B, out [8] C)
 {
-    C = A + B;
+    C = A + B - C;
 }
 
 Shifter(in [8] A, in [8] B, out [8] C)
