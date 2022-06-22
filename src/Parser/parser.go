@@ -1,7 +1,6 @@
 package Parser
 
 import (
-	"fmt"
 	"strconv"
 
 	AST "github.com/ConnerTenn/Project-Chrono/AST"
@@ -163,23 +162,42 @@ func parseStatement(lex *L.Lexer) AST.Stmt {
 
 	t, _ := lex.GetNext()
 	for t.Type != L.EOL {
+
 		if t.Type == L.Iden {
 			rpn = append(rpn, t)
+
 		} else if t.Type == L.Literal {
 			rpn = append(rpn, t)
+
 		} else if t.Type == L.Asmt {
 			opStack = append(opStack, t)
+
+		} else if t.Type == L.LParen {
+			opStack = append(opStack, t)
+
+		} else if t.Type == L.RParen {
+			// Place all operations till the previous LParen onto the rpn stack
+			op := opStack[len(opStack)-1]
+			for op.Type != L.LParen {
+				rpn = append(rpn, op)
+				opStack = opStack[:len(opStack)-1]
+				op = opStack[len(opStack)-1]
+			}
+			//Remove LParen from opStack
+			opStack = opStack[:len(opStack)-1]
+
 		} else if t.Type == L.Math {
 			if len(opStack) > 0 {
 				op1 := parseOperation(opStack[len(opStack)-1])
 				op2 := parseOperation(t)
 				//If op on the opStack is higher precedence, place into the rpn immediately
-				if OpCmp(op1, op2) > 0 {
+				if op1 != AST.Bracket && OpCmp(op1, op2) > 0 {
 					rpn = append(rpn, opStack[len(opStack)-1])
 					opStack = opStack[:len(opStack)-1]
 				}
 			}
 			opStack = append(opStack, t)
+
 		} else {
 			displayError("Unknown token", t, L.EOL)
 		}
@@ -191,7 +209,7 @@ func parseStatement(lex *L.Lexer) AST.Stmt {
 		rpn = append(rpn, opStack[i])
 	}
 
-	fmt.Println(rpn)
+	// fmt.Println(rpn)
 
 	if rpn[len(rpn)-1].Type != L.Asmt {
 		displayError("Expected assignment expression", rpn[len(rpn)-1], L.Asmt)
@@ -207,7 +225,7 @@ func parseStatement(lex *L.Lexer) AST.Stmt {
 }
 
 func isOperation(t L.Token) bool {
-	if t.Type != L.Math && t.Type != L.Asmt && t.Type != L.LBrace && t.Type != L.RBrace {
+	if t.Type != L.Math && t.Type != L.Asmt && t.Type != L.LParen && t.Type != L.RParen {
 		return false
 	}
 	return true
@@ -247,6 +265,5 @@ func parseOperation(t L.Token) AST.Operation {
 }
 
 func OpCmp(op1 AST.Operation, op2 AST.Operation) int {
-	fmt.Println(op1, " : ", op2)
 	return int(op1 - op2)
 }
