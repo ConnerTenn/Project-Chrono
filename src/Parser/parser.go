@@ -135,7 +135,7 @@ func createExpression(fpn chan L.Token) AST.Expr {
 		rhs := createExpression(fpn)
 		//Recursively collect the LHS
 		lhs := createExpression(fpn)
-		return &AST.MathStmt{Pos: head.Pos, LHS: lhs, RHS: rhs, Op: op}
+		return &AST.MathExpr{Pos: head.Pos, LHS: lhs, RHS: rhs, Op: op}
 	}
 
 	//If this isn't an operation, it must be an Iden or a Literal
