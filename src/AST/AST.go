@@ -56,7 +56,7 @@ type (
 	}
 
 	// Represents a math calculation
-	MathStmt struct {
+	MathExpr struct {
 		Pos [2]int
 		LHS Expr
 		RHS Expr
@@ -69,21 +69,21 @@ func (x *Ident) IsComputable() bool     { return false }
 func (x *Literal) IsComputable() bool   { return true }
 func (x *ParenExpr) IsComputable() bool { return x.X.IsComputable() }
 func (x *CallExpr) IsComputable() bool  { return false }
-func (x *MathStmt) IsComputable() bool  { return false }
+func (x *MathExpr) IsComputable() bool  { return false }
 
 func (x *BadExpr) GetPos() [2]int   { return x.Pos }
 func (x *Ident) GetPos() [2]int     { return x.Pos }
 func (x *Literal) GetPos() [2]int   { return x.Pos }
 func (x *ParenExpr) GetPos() [2]int { return x.StartPos }
 func (x *CallExpr) GetPos() [2]int  { return x.Pos }
-func (x *MathStmt) GetPos() [2]int  { return x.Pos }
+func (x *MathExpr) GetPos() [2]int  { return x.Pos }
 
 func (*BadExpr) exprNode()   {}
 func (*Ident) exprNode()     {}
 func (*Literal) exprNode()   {}
 func (*ParenExpr) exprNode() {}
 func (*CallExpr) exprNode()  {}
-func (*MathStmt) exprNode()  {}
+func (*MathExpr) exprNode()  {}
 
 func (s *BadExpr) String() string { return "BAD EXPRESSION" }
 func (x Ident) String() string {
@@ -94,7 +94,7 @@ func (x Literal) String() string {
 	return x.Value
 }
 
-func (x MathStmt) String() string {
+func (x MathExpr) String() string {
 	var str string
 
 	str += "(" + x.LHS.String() + " "
