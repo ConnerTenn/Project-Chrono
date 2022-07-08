@@ -230,6 +230,9 @@ func (s AssignStmt) String() string {
 
 	return str
 }
+func (s *IfStmt) String() string {
+	return "if " + s.Cond.String()
+}
 
 func (s BlockStmt) String() string { return s.StringIdent(0) }
 func (s BlockStmt) StringIdent(level int) string {

@@ -126,6 +126,38 @@ func parseBlock(lex *L.Lexer) AST.BlockStmt {
 	return blk
 }
 
+//FIXME : Definitely a lot to be added here
+func parseStatement(lex *L.Lexer) AST.Stmt {
+
+	if lex.ExpectNext(L.Iden) {
+		//FIXME: Assume expression is an assignment
+		lhs, _ := lex.GetNext()
+
+		lex.GetNext()
+
+		rhs := ParseExpression(lex)
+
+		return &AST.AssignStmt{Pos: lhs.Pos, LHS: &AST.Ident{Pos: lhs.Pos, Name: lhs.Value}, RHS: rhs}
+
+	} else if lex.ExpectNext(L.If) {
+		//Consume if
+		ifToken, _ := lex.GetNext()
+
+		cond := ParseExpression(lex)
+
+		return &AST.IfStmt{
+			Pos:  ifToken.Pos,
+			Cond: cond,
+			Body: nil,
+			Else: nil,
+		}
+	}
+
+	next, _ := lex.GetNext()
+	displayError("Could not parse statement", next, L.EOL)
+	return &AST.BadStmt{Pos: next.Pos}
+}
+
 //fpn: Forward polish notation
 func createExpression(fpn chan L.Token) AST.Expr {
 	head := <-fpn
@@ -149,24 +181,7 @@ func createExpression(fpn chan L.Token) AST.Expr {
 	}
 }
 
-//fpn: Forward polish notation
-func createStatement(fpn chan L.Token) AST.Stmt {
-	head := <-fpn
-
-	op := parseOperation(head)
-	switch op {
-	case AST.Asmt:
-		//Recursively collect the RHS
-		rhs := createExpression(fpn)
-		//Recursively collect the LHS
-		lhs := createExpression(fpn)
-		return &AST.AssignStmt{Pos: head.Pos, LHS: lhs, RHS: rhs}
-	}
-	return &AST.BadStmt{}
-}
-
-//FIXME : Definitely a lot to be added here
-func parseStatement(lex *L.Lexer) AST.Stmt {
+func ParseExpression(lex *L.Lexer) AST.Expr {
 	//Reverse polish notation buffer
 	var rpn []L.Token
 	//Stack for storing the operators
@@ -227,18 +242,13 @@ func parseStatement(lex *L.Lexer) AST.Stmt {
 
 	// fmt.Println(rpn)
 
-	//FIXME: Assume expression is an assignment
-	if rpn[len(rpn)-1].Type != L.Asmt {
-		displayError("Expected assignment expression", rpn[len(rpn)-1], L.Asmt)
-	}
-
 	//Convert rpn into a forward polish notation as a channel acting as a fifo
 	fpn := make(chan L.Token, len(rpn))
 	for i := len(rpn) - 1; i >= 0; i-- {
 		fpn <- rpn[i]
 	}
 
-	return createStatement(fpn)
+	return createExpression(fpn)
 }
 
 func isOperation(t L.Token) bool {
