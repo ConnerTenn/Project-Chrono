@@ -14,10 +14,16 @@ func displayTokenError(t L.Token) {
 	os.Exit(-1)
 }
 
-func displayError(context string, recievedToken L.Token, expected L.TokenType) {
+func displayError(context string, recievedToken L.Token, expected ...L.TokenType) {
 
 	fmt.Println("Error Parsing:", context,
-		"\nRecieved:", recievedToken, "\nExpected:", expected)
+		"\nRecieved:", recievedToken)
+
+	fmt.Print("Expected: ")
+	for _, expect := range expected {
+		fmt.Print(expect, " ")
+	}
+	fmt.Println()
 
 	os.Exit(-1)
 }

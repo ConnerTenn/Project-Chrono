@@ -159,7 +159,7 @@ func parseStatement(lex *L.Lexer) AST.Stmt {
 	}
 
 	next, _ := lex.GetNext()
-	displayError("Could not parse statement", next, L.EOL)
+	displayError("Could not parse statement", next, L.Iden, L.If, L.RCurly)
 	return &AST.BadStmt{Pos: next.Pos}
 }
 
@@ -235,7 +235,7 @@ func ParseExpression(lex *L.Lexer) AST.Expr {
 			opStack = append(opStack, t)
 
 		} else {
-			displayError("Unknown token", t, L.EOL)
+			displayError("Unknown token", t, L.Iden, L.Literal, L.Asmt, L.LParen, L.RParen, L.Math, L.Cmp)
 		}
 
 		t, _ = lex.GetNext()
