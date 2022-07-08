@@ -135,6 +135,7 @@ func parseStatement(lex *L.Lexer) AST.Stmt {
 
 		lex.GetNext()
 
+		//FIXME, will require semicolon after the if condition
 		rhs := ParseExpression(lex)
 
 		return &AST.AssignStmt{Pos: lhs.Pos, LHS: &AST.Ident{Pos: lhs.Pos, Name: lhs.Value}, RHS: rhs}
@@ -145,10 +146,12 @@ func parseStatement(lex *L.Lexer) AST.Stmt {
 
 		cond := ParseExpression(lex)
 
+		body := parseBlock(lex)
+
 		return &AST.IfStmt{
 			Pos:  ifToken.Pos,
 			Cond: cond,
-			Body: nil,
+			Body: &body,
 			Else: nil,
 		}
 	}
@@ -217,7 +220,7 @@ func ParseExpression(lex *L.Lexer) AST.Expr {
 			//Remove LParen from opStack
 			opStack = opStack[:len(opStack)-1]
 
-		} else if t.Type == L.Math {
+		} else if t.Type == L.Math || t.Type == L.Cmp {
 			if len(opStack) > 0 {
 				op1 := parseOperation(opStack[len(opStack)-1])
 				op2 := parseOperation(t)
@@ -252,7 +255,7 @@ func ParseExpression(lex *L.Lexer) AST.Expr {
 }
 
 func isOperation(t L.Token) bool {
-	if t.Type != L.Math && t.Type != L.Asmt && t.Type != L.LParen && t.Type != L.RParen {
+	if t.Type != L.Math && t.Type != L.Cmp && t.Type != L.LParen && t.Type != L.RParen {
 		return false
 	}
 	return true
@@ -286,6 +289,8 @@ func parseOperation(t L.Token) AST.Operation {
 		op = AST.Bracket
 	case ")":
 		op = AST.Bracket
+	case "==":
+		op = AST.Equals
 	}
 
 	return op

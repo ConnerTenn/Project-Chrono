@@ -14,6 +14,9 @@ AddSub(in [8] Val, out [8] Add, out [8] Sub)
     Add = Val + 1 * 2;
     Sub = (Val - 1) * 2;
 
-    if (2 == 2);
+    if (2 == 2) ;
+    {
+        Add = 3;
+    }
 }
 

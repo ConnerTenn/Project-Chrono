@@ -16,11 +16,12 @@ func _() {
 	_ = x[Multi-5]
 	_ = x[Div-6]
 	_ = x[Bracket-7]
+	_ = x[Equals-8]
 }
 
-const _Operation_name = "AsmtLShiftRShiftAddSubMultiDivBracket"
+const _Operation_name = "AsmtLShiftRShiftAddSubMultiDivBracketEquals"
 
-var _Operation_index = [...]uint8{0, 4, 10, 16, 19, 22, 27, 30, 37}
+var _Operation_index = [...]uint8{0, 4, 10, 16, 19, 22, 27, 30, 37, 43}
 
 func (i Operation) String() string {
 	if i < 0 || i >= Operation(len(_Operation_index)-1) {

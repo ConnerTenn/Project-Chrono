@@ -116,17 +116,19 @@ const (
 	Multi
 	Div
 	Bracket
+	Equals
 )
 
 var Precedence = map[Operation]int{
 	Asmt:    0,
-	LShift:  1,
-	RShift:  1,
-	Add:     2,
-	Sub:     2,
-	Multi:   3,
-	Div:     3,
-	Bracket: 4,
+	Equals:  1,
+	LShift:  2,
+	RShift:  2,
+	Add:     3,
+	Sub:     3,
+	Multi:   4,
+	Div:     4,
+	Bracket: 5,
 }
 
 /* --- Statements --- */
