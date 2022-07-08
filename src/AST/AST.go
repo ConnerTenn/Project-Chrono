@@ -138,7 +138,7 @@ type (
 	Stmt interface {
 		AST
 		stmtNode()
-		String() string
+		String(indent int) string
 	}
 
 	// Represents a statement with incorrect syntax
@@ -222,26 +222,36 @@ func (*BlockStmt) stmtNode()    {}
 func (*IfStmt) stmtNode()       {}
 func (*LoopStmt) stmtNode()     {}
 
-func (s *BadStmt) String() string { return "BAD STATEMENT" }
-func (s AssignStmt) String() string {
+func Indent(level int) string {
+	return strings.Repeat("  ", level)
+}
+
+func (s *BadStmt) String(indent int) string { return "BAD STATEMENT" }
+func (s AssignStmt) String(indent int) string {
 	var str string
 
+	str += Indent(indent)
 	str += s.LHS.String()
 	str += " = "
 	str += s.RHS.String()
 
 	return str
 }
-func (s *IfStmt) String() string {
-	return "if " + s.Cond.String()
+func (s *IfStmt) String(indent int) string {
+	var str string
+	str += Indent(indent)
+	str += "if " + s.Cond.String() + "\n"
+
+	str += s.Body.String(indent + 1)
+
+	return str
 }
 
-func (s BlockStmt) String() string { return s.StringIdent(0) }
-func (s BlockStmt) StringIdent(level int) string {
+func (s BlockStmt) String(indent int) string {
 	var str string
 
 	for _, stmt := range s.StmtList {
-		str += strings.Repeat("  ", level) + stmt.String() + "\n"
+		str += stmt.String(indent) + "\n"
 	}
 
 	return str
@@ -335,7 +345,7 @@ func (d ModuleDecl) String() string {
 	}
 	str += ")\n"
 
-	str += d.Block.StringIdent(1)
+	str += d.Block.String(1)
 
 	return str
 }
