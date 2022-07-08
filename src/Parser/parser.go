@@ -113,6 +113,8 @@ func parseBlock(lex *L.Lexer) AST.BlockStmt {
 	t, _ := lex.GetNext() //Consume LCurly
 	blk := AST.BlockStmt{StartPos: t.Pos}
 
+	t, _ = lex.PeekNext()
+
 	//Run until end of block
 	for t.Type != L.RCurly {
 		//FIXME : Assuming blocks contain only statements
