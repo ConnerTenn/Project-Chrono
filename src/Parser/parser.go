@@ -135,9 +135,8 @@ func parseStatement(lex *L.Lexer) AST.Stmt {
 		//FIXME: Assume expression is an assignment
 		lhs, _ := lex.GetNext()
 
-		lex.GetNext()
+		lex.GetNext() //Consume assignment
 
-		//FIXME, will require semicolon after the if condition
 		rhs := ParseExpression(lex)
 
 		return &AST.AssignStmt{Pos: lhs.Pos, LHS: &AST.Ident{Pos: lhs.Pos, Name: lhs.Value}, RHS: rhs}
@@ -192,8 +191,10 @@ func ParseExpression(lex *L.Lexer) AST.Expr {
 	//Stack for storing the operators
 	var opStack []L.Token
 
+	expectNext := true
 	t, _ := lex.GetNext()
-	for t.Type != L.EOL {
+	for expectNext {
+		expectNext = false
 
 		if t.Type == L.Iden {
 			rpn = append(rpn, t)
@@ -204,10 +205,12 @@ func ParseExpression(lex *L.Lexer) AST.Expr {
 		} else if t.Type == L.Asmt {
 			//Assignments always go directly onto the opStack (Since it is the lowest precedence)
 			opStack = append(opStack, t)
+			expectNext = true
 
 		} else if t.Type == L.LParen {
 			//LParen always goes directly onto stack as a marker for when RParen is found
 			opStack = append(opStack, t)
+			expectNext = true
 
 		} else if t.Type == L.RParen {
 			//Place all operations till the previous LParen onto the rpn stack
@@ -233,12 +236,24 @@ func ParseExpression(lex *L.Lexer) AST.Expr {
 				}
 			}
 			opStack = append(opStack, t)
+			expectNext = true
 
 		} else {
 			displayError("Unknown token", t, L.Iden, L.Literal, L.Asmt, L.LParen, L.RParen, L.Math, L.Cmp)
 		}
 
-		t, _ = lex.GetNext()
+		if !expectNext {
+			//Check the next token to see if a new operator exists to continue the expression
+			n, _ := lex.PeekNext()
+			if n.Type == L.Math || n.Type == L.Cmp || n.Type == L.RParen {
+				expectNext = true
+			}
+		}
+
+		//Collect the next token if required
+		if expectNext {
+			t, _ = lex.GetNext()
+		}
 	}
 
 	for i := len(opStack) - 1; i >= 0; i-- {
