@@ -196,23 +196,24 @@ func ParseExpression(lex *L.Lexer) AST.Expr {
 	for expectNext {
 		expectNext = false
 
-		if t.Type == L.Iden {
+		switch t.Type {
+		case L.Iden:
 			rpn = append(rpn, t)
 
-		} else if t.Type == L.Literal {
+		case L.Literal:
 			rpn = append(rpn, t)
 
-		} else if t.Type == L.Asmt {
+		case L.Asmt:
 			//Assignments always go directly onto the opStack (Since it is the lowest precedence)
 			opStack = append(opStack, t)
 			expectNext = true
 
-		} else if t.Type == L.LParen {
+		case L.LParen:
 			//LParen always goes directly onto stack as a marker for when RParen is found
 			opStack = append(opStack, t)
 			expectNext = true
 
-		} else if t.Type == L.RParen {
+		case L.RParen:
 			//Place all operations till the previous LParen onto the rpn stack
 			op := opStack[len(opStack)-1]
 			for op.Type != L.LParen {
@@ -225,7 +226,7 @@ func ParseExpression(lex *L.Lexer) AST.Expr {
 			//Remove LParen from opStack
 			opStack = opStack[:len(opStack)-1]
 
-		} else if t.Type == L.Math || t.Type == L.Cmp {
+		case L.Math, L.Cmp:
 			if len(opStack) > 0 {
 				op1 := parseOperation(opStack[len(opStack)-1])
 				op2 := parseOperation(t)
@@ -238,7 +239,7 @@ func ParseExpression(lex *L.Lexer) AST.Expr {
 			opStack = append(opStack, t)
 			expectNext = true
 
-		} else {
+		default:
 			displayError("Unknown token", t, L.Iden, L.Literal, L.Asmt, L.LParen, L.RParen, L.Math, L.Cmp)
 		}
 
