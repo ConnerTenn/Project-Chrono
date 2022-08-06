@@ -109,6 +109,7 @@ type Operation int
 
 const (
 	Asmt Operation = iota
+	AsmtReg
 	LShift
 	RShift
 	Add
@@ -161,6 +162,7 @@ type (
 	// Represents an assignment
 	AssignStmt struct {
 		Pos [2]int
+		Op  Operation
 		LHS Expr
 		RHS Expr
 	}
@@ -232,7 +234,11 @@ func (s AssignStmt) String(indent int) string {
 
 	str += Indent(indent)
 	str += s.LHS.String()
-	str += " = "
+	if s.Op == AsmtReg {
+		str += " <- "
+	} else {
+		str += " = "
+	}
 	str += s.RHS.String()
 
 	return str
