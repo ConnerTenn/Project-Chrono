@@ -52,6 +52,7 @@ func parseModule(lex *L.Lexer, t L.Token) AST.ModuleDecl {
 	return newModule
 }
 
+// TODO: Split out a parseSignal function
 func parseParam(lex *L.Lexer, t L.Token) AST.ParamDecl {
 	curParam := AST.ParamDecl{}
 
@@ -97,6 +98,27 @@ func parseParam(lex *L.Lexer, t L.Token) AST.ParamDecl {
 	t, _ = lex.GetNext()
 
 	curParam.Name = parseIdent(t)
+
+	// check if tied to a clock
+	if lex.ExpectNext(L.Atmark) {
+		// drop Atmark
+		_, _ = lex.GetNext()
+
+		// get clock info
+		t, _ = lex.GetNext()
+
+		displayAndCheckError("Clock Declaration Incorrect", t, L.Iden, L.Math)
+		if t.Type == L.Math && t.Value != "!" {
+			displayError("Clocks Can Only Be Negated", t, L.Iden, L.Math)
+		} else if t.Type == L.Math {
+			curParam.Clock.Neg = true
+
+			t, _ = lex.GetNext()
+		}
+
+		displayAndCheckError("Clock Declaration Incorrect", t, L.Iden)
+		curParam.Clock.Name = parseIdent(t)
+	}
 
 	return curParam
 }

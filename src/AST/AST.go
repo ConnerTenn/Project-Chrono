@@ -272,10 +272,16 @@ type (
 		Value Expr
 	}
 
+	ClockDecl struct {
+		Name Ident
+		Neg  bool
+	}
+
 	SignalDecl struct {
 		Name  Ident
 		Width int
 		Type  SignalType
+		Clock ClockDecl
 	}
 
 	ParamDecl struct { //Extends SignalDecl
@@ -310,10 +316,27 @@ const (
 
 func (d ValueDecl) GetPos() [2]int  { return d.Name.GetPos() }
 func (d ModuleDecl) GetPos() [2]int { return d.Name.GetPos() }
+func (d ClockDecl) GetPos() [2]int  { return d.Name.GetPos() }
 
 func (*ValueDecl) declNode()  {}
 func (*ParamDecl) declNode()  {}
 func (*ModuleDecl) declNode() {}
+func (*ClockDecl) declNode()  {}
+
+func (d ClockDecl) String() string {
+	var str string
+	if d.Name.Name != "" {
+		str += " @ "
+
+		if d.Neg {
+			str += "!"
+		}
+
+		str += d.Name.Name
+	}
+
+	return str
+}
 
 func (d SignalDecl) String() string {
 	var str string
@@ -322,6 +345,8 @@ func (d SignalDecl) String() string {
 		str += "[" + fmt.Sprint(d.Width) + "] "
 	}
 	str += d.Name.Name
+
+	str += d.Clock.String()
 
 	return str
 }

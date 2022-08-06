@@ -29,11 +29,11 @@ func displayError(context string, recievedToken L.Token, expected ...L.TokenType
 }
 
 func displayAndCheckError(context string, recievedToken L.Token, expected ...L.TokenType) {
-  for _, token := range expected {
-    if recievedToken.Type == token {
-      return;
-    }
-  }
+	for _, token := range expected {
+		if recievedToken.Type == token {
+			return
+		}
+	}
 
-  displayError(context, recievedToken, expected...)
+	displayError(context, recievedToken, expected...)
 }

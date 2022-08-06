@@ -72,6 +72,7 @@ var tokenMap = map[string]TokenType{
 	"+":       Math,
 	"<<":      Math,
 	">>":      Math,
+	"!":       Math,
 	"=":       Asmt,
 	"==":      Cmp,
 	">=":      Cmp,
