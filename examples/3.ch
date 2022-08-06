@@ -7,19 +7,19 @@ Mux(
 {
     if (Sel == 0)
     {
-        Q = A;
+        Q = A
     }
     else if (Sel == 1)
     {
-        Q = B;
+        Q = B
     }
     else if (Sel == 2)
     {
-        Q = C;
+        Q = C
     }
     else
     {
         //Default to 0
-        Q = 0;
+        Q = 0
     }
 }
