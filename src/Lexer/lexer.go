@@ -74,6 +74,7 @@ var tokenMap = map[string]TokenType{
 	">>":      Math,
 	"!":       Math,
 	"=":       Asmt,
+	"<-":      Asmt,
 	"==":      Cmp,
 	">=":      Cmp,
 	"<=":      Cmp,
@@ -137,6 +138,11 @@ func multiToken(first rune, next rune) bool {
 
 	//Check if this is a valid Comparison multi token
 	if checkCmp(first) && checkCmp(next) {
+		return true
+	}
+
+	//Check reg assigment
+	if first == '<' && next == '-' {
 		return true
 	}
 

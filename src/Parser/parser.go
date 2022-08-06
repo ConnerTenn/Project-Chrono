@@ -157,11 +157,18 @@ func parseStatement(lex *L.Lexer) AST.Stmt {
 		//FIXME: Assume expression is an assignment
 		lhs, _ := lex.GetNext()
 
-		lex.GetNext() //Consume assignment
+		asmt, _ := lex.GetNext()
+		if asmt.Type != L.Asmt {
+			displayError("Expected assignment statement", asmt, L.Asmt)
+		}
+		op := AST.Asmt
+		if asmt.Value == "<-" {
+			op = AST.AsmtReg
+		}
 
 		rhs := ParseExpression(lex)
 
-		return &AST.AssignStmt{Pos: lhs.Pos, LHS: &AST.Ident{Pos: lhs.Pos, Name: lhs.Value}, RHS: rhs}
+		return &AST.AssignStmt{Pos: lhs.Pos, Op: op, LHS: &AST.Ident{Pos: lhs.Pos, Name: lhs.Value}, RHS: rhs}
 
 	} else if lex.ExpectNext(L.If) {
 		//Consume if

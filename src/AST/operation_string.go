@@ -9,19 +9,20 @@ func _() {
 	// Re-run the stringer command to generate them again.
 	var x [1]struct{}
 	_ = x[Asmt-0]
-	_ = x[LShift-1]
-	_ = x[RShift-2]
-	_ = x[Add-3]
-	_ = x[Sub-4]
-	_ = x[Multi-5]
-	_ = x[Div-6]
-	_ = x[Bracket-7]
-	_ = x[Equals-8]
+	_ = x[AsmtReg-1]
+	_ = x[LShift-2]
+	_ = x[RShift-3]
+	_ = x[Add-4]
+	_ = x[Sub-5]
+	_ = x[Multi-6]
+	_ = x[Div-7]
+	_ = x[Bracket-8]
+	_ = x[Equals-9]
 }
 
-const _Operation_name = "AsmtLShiftRShiftAddSubMultiDivBracketEquals"
+const _Operation_name = "AsmtAsmtRegLShiftRShiftAddSubMultiDivBracketEquals"
 
-var _Operation_index = [...]uint8{0, 4, 10, 16, 19, 22, 27, 30, 37, 43}
+var _Operation_index = [...]uint8{0, 4, 11, 17, 23, 26, 29, 34, 37, 44, 50}
 
 func (i Operation) String() string {
 	if i < 0 || i >= Operation(len(_Operation_index)-1) {
