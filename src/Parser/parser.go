@@ -29,10 +29,9 @@ func parseModule(lex *L.Lexer, t L.Token) AST.ModuleDecl {
 
 	newModule.Name = parseIdent(t)
 	t, _ = lex.GetNext()
-	if t.Type != L.LParen {
-		// TODO : Add BadExpr?
-		displayError("Did not find LParen to open module parameters", t, L.LParen)
-	}
+
+	// TODO : Add BadExpr
+	displayAndCheckError("Did not find LParen to open module parameters", t, L.LParen)
 
 	// build parameters
 	t, _ = lex.GetNext() // drop LParen
@@ -81,17 +80,13 @@ func parseParam(lex *L.Lexer, t L.Token) AST.ParamDecl {
 		lex.GetNext()
 		t, _ = lex.GetNext()
 
-		if t.Type != L.Literal {
-			displayError("Bit width specifier not found", t, L.Literal)
-		}
+		displayAndCheckError("Bit width specifier not found", t, L.Literal)
 
 		curParam.Width, _ = strconv.Atoi(t.Value)
 
 		t, _ = lex.GetNext()
 
-		if t.Type != L.RBrace {
-			displayError("Bit width closing brace not found", t, L.RBrace)
-		}
+		displayAndCheckError("Bit width closing brace not found", t, L.RBrace)
 	}
 
 	// get / set name
@@ -124,9 +119,7 @@ func parseParam(lex *L.Lexer, t L.Token) AST.ParamDecl {
 }
 
 func parseIdent(t L.Token) AST.Ident {
-	if t.Type != L.Iden {
-		displayError("Could not parse identifier", t, L.Iden)
-	}
+	displayAndCheckError("Could not parse identifier", t, L.Iden)
 
 	return AST.Ident{Pos: t.Pos, Name: t.Value}
 }
@@ -158,9 +151,8 @@ func parseStatement(lex *L.Lexer) AST.Stmt {
 		lhs, _ := lex.GetNext()
 
 		asmt, _ := lex.GetNext()
-		if asmt.Type != L.Asmt {
-			displayError("Expected assignment statement", asmt, L.Asmt)
-		}
+		displayAndCheckError("Expected assignment statement", asmt, L.Asmt)
+
 		op := AST.Asmt
 		if asmt.Value == "<-" {
 			op = AST.AsmtReg

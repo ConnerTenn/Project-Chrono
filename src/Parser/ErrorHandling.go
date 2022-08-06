@@ -3,6 +3,7 @@ package Parser
 import (
 	"fmt"
 	"os"
+	"runtime"
 
 	L "github.com/ConnerTenn/Project-Chrono/Lexer"
 )
@@ -35,5 +36,7 @@ func displayAndCheckError(context string, recievedToken L.Token, expected ...L.T
 		}
 	}
 
-	displayError(context, recievedToken, expected...)
+	_, fn, line, _ := runtime.Caller(1)
+
+	displayError(fmt.Sprintf(context+" -- at  %s:%d", fn, line), recievedToken, expected...)
 }
