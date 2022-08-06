@@ -27,3 +27,13 @@ func displayError(context string, recievedToken L.Token, expected ...L.TokenType
 
 	os.Exit(-1)
 }
+
+func displayAndCheckError(context string, recievedToken L.Token, expected ...L.TokenType) {
+  for _, token := range expected {
+    if recievedToken.Type == token {
+      return;
+    }
+  }
+
+  displayError(context, recievedToken, expected...)
+}
