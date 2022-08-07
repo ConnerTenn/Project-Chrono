@@ -6,6 +6,7 @@ import (
 
 	L "github.com/ConnerTenn/Project-Chrono/Lexer"
 	P "github.com/ConnerTenn/Project-Chrono/Parser"
+	verilog "github.com/ConnerTenn/Project-Chrono/Verilog"
 )
 
 // todo: add type to hold CLI options, with description for help menu
@@ -51,4 +52,6 @@ func main() {
 		fmt.Print(elem)
 		fmt.Println()
 	}
+
+	verilog.GenerateVerilog(tree)
 }
