@@ -5,9 +5,14 @@ import (
 	"os"
 	"reflect"
 	"runtime"
+	"strings"
 
 	AST "github.com/ConnerTenn/Project-Chrono/AST"
 )
+
+func Indent(level int) string {
+	return strings.Repeat("\t", level)
+}
 
 func displayError(msg string) {
 	_, fn, line, _ := runtime.Caller(1)
@@ -27,12 +32,21 @@ func closeFile() {
 	outfile.Close()
 }
 
-func EmitModuleDecl(obj AST.ModuleDecl) {
-	writeToFile("\nmodule " + obj.Name.Name + " (\n")
+func emitModuleDecl(mod AST.ModuleDecl) {
+	writeToFile("\nmodule " + mod.Name.Name + " (\n")
 
 	//Write parameters
-	for i, param := range obj.Params {
-		str := "\t" + param.Dir.String()
+	for i, param := range mod.Params {
+		str := Indent(1)
+		//Dir
+		switch param.Dir {
+		case AST.In:
+			str += "input"
+		case AST.Out:
+			str += "output"
+		case AST.Inout:
+			str += "inout"
+		}
 		//wire/reg
 		if param.Clock != nil {
 			str += " reg"
@@ -43,7 +57,7 @@ func EmitModuleDecl(obj AST.ModuleDecl) {
 		}
 		//Name
 		str += " " + param.Name.Name
-		if i < len(obj.Params)-1 {
+		if i < len(mod.Params)-1 {
 			str += ","
 		}
 		str += "\n"
@@ -51,7 +65,29 @@ func EmitModuleDecl(obj AST.ModuleDecl) {
 	}
 	writeToFile(");\n")
 
+	emitBlock(mod.Block, 0, false)
+
 	writeToFile("endmodule\n")
+}
+
+func emitBlock(blk AST.BlockStmt, ident int, surround bool) {
+	if surround {
+		writeToFile(Indent(ident) + "begin\n")
+	}
+
+	//Write each statement
+	str := ""
+	for _, stmt := range blk.StmtList {
+		emitStatement(stmt, ident+1)
+	}
+	writeToFile(str)
+
+	if surround {
+		writeToFile(Indent(ident) + "end\n")
+	}
+}
+
+func emitStatement(stmt AST.Stmt, ident int) {
 }
 
 func GenerateVerilog(ast []AST.AST) {
@@ -62,7 +98,7 @@ func GenerateVerilog(ast []AST.AST) {
 		switch obj := elem.(type) {
 		case AST.ModuleDecl:
 			fmt.Println("BlockStmt")
-			EmitModuleDecl(obj)
+			emitModuleDecl(obj)
 		default:
 			displayError("Unexpected AST element: " + fmt.Sprint(reflect.TypeOf(elem)))
 		}
