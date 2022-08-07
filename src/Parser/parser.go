@@ -126,6 +126,8 @@ func parseIdent(t L.Token) AST.Ident {
 
 func parseBlock(lex *L.Lexer) AST.BlockStmt {
 	t, _ := lex.GetNext() //Consume LCurly
+	displayAndCheckError("Block Statement improperly started", t, L.LCurly)
+
 	blk := AST.BlockStmt{StartPos: t.Pos}
 
 	t, _ = lex.PeekNext()
@@ -137,6 +139,7 @@ func parseBlock(lex *L.Lexer) AST.BlockStmt {
 
 		t, _ = lex.PeekNext()
 	}
+	displayAndCheckError("Block Statement improperly terminated", t, L.RCurly)
 	lex.GetNext() //Consume RCurly
 
 	blk.EndPos = t.Pos
@@ -145,42 +148,69 @@ func parseBlock(lex *L.Lexer) AST.BlockStmt {
 
 //FIXME : Definitely a lot to be added here
 func parseStatement(lex *L.Lexer) AST.Stmt {
+	next, _ := lex.PeekNext()
+	displayAndCheckError("Invalid beginning of a statement", next, L.Iden, L.If, L.LCurly)
 
-	if lex.ExpectNext(L.Iden) {
-		//FIXME: Assume expression is an assignment
-		lhs, _ := lex.GetNext()
+	switch next.Type {
+	case L.Iden:
+		{
+			//FIXME: Assume expression is an assignment
+			lhs, _ := lex.GetNext()
 
-		asmt, _ := lex.GetNext()
-		displayAndCheckError("Expected assignment statement", asmt, L.Asmt)
+			asmt, _ := lex.GetNext()
+			displayAndCheckError("Expected assignment statement", asmt, L.Asmt)
 
-		op := AST.Asmt
-		if asmt.Value == "<-" {
-			op = AST.AsmtReg
+			op := AST.Asmt
+			if asmt.Value == "<-" {
+				op = AST.AsmtReg
+			}
+
+			rhs := ParseExpression(lex)
+
+			return &AST.AssignStmt{Pos: lhs.Pos, Op: op, LHS: &AST.Ident{Pos: lhs.Pos, Name: lhs.Value}, RHS: rhs}
+
 		}
 
-		rhs := ParseExpression(lex)
+	case L.If:
+		{
+			//Consume if
+			ifToken, _ := lex.GetNext()
 
-		return &AST.AssignStmt{Pos: lhs.Pos, Op: op, LHS: &AST.Ident{Pos: lhs.Pos, Name: lhs.Value}, RHS: rhs}
+			cond := ParseExpression(lex)
 
-	} else if lex.ExpectNext(L.If) {
-		//Consume if
-		ifToken, _ := lex.GetNext()
+			body := parseBlock(lex)
 
-		cond := ParseExpression(lex)
+			newStmt := AST.IfStmt{
+				Pos:  ifToken.Pos,
+				Cond: cond,
+				Body: &body,
+				Else: nil,
+			}
 
-		body := parseBlock(lex)
+			if lex.ExpectNext(L.Else) {
+				// drop else
+				_, _ = lex.GetNext()
+				t, _ := lex.PeekNext()
 
-		return &AST.IfStmt{
-			Pos:  ifToken.Pos,
-			Cond: cond,
-			Body: &body,
-			Else: nil,
+				displayAndCheckError("else cannot be an arbitrary statement", t, L.If, L.LCurly)
+
+				newStmt.Else = parseStatement(lex)
+			}
+
+			return &newStmt
+		}
+
+	case L.LCurly:
+		{
+			newBlock := parseBlock(lex)
+			return &newBlock
+		}
+
+	default:
+		{
+			return &AST.BadStmt{Pos: next.Pos}
 		}
 	}
-
-	next, _ := lex.GetNext()
-	displayError("Could not parse statement", next, L.Iden, L.If, L.RCurly)
-	return &AST.BadStmt{Pos: next.Pos}
 }
 
 //fpn: Forward polish notation

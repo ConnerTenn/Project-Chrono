@@ -19,7 +19,6 @@ Mux(
     }
     else
     {
-        //Default to 0
         Q = 0
     }
 }

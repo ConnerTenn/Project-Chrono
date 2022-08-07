@@ -18,6 +18,7 @@ const (
 	Spec                // Wire / Reg / Param, specifier for 'variables'
 	Default             // Default case
 	If
+	Else
 	Switch
 	LParen
 	RParen
@@ -54,6 +55,7 @@ var tokenMap = map[string]TokenType{
 	"reg":     Spec,
 	"var":     Spec,
 	"if":      If,
+	"else":    Else,
 	"switch":  Switch,
 	"default": Default,
 	",":       Comma,

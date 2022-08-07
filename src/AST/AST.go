@@ -250,6 +250,10 @@ func (s *IfStmt) String(indent int) string {
 
 	str += s.Body.String(indent + 1)
 
+	if s.Else != nil {
+		str += Indent(indent) + "else\n" + s.Else.String(indent+1)
+	}
+
 	return str
 }
 

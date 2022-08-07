@@ -15,25 +15,26 @@ func _() {
 	_ = x[Spec-4]
 	_ = x[Default-5]
 	_ = x[If-6]
-	_ = x[Switch-7]
-	_ = x[LParen-8]
-	_ = x[RParen-9]
-	_ = x[LCurly-10]
-	_ = x[RCurly-11]
-	_ = x[LBrace-12]
-	_ = x[RBrace-13]
-	_ = x[Atmark-14]
-	_ = x[Math-15]
-	_ = x[Comma-16]
-	_ = x[Colon-17]
-	_ = x[Asmt-18]
-	_ = x[Cmp-19]
-	_ = x[Unknown-20]
+	_ = x[Else-7]
+	_ = x[Switch-8]
+	_ = x[LParen-9]
+	_ = x[RParen-10]
+	_ = x[LCurly-11]
+	_ = x[RCurly-12]
+	_ = x[LBrace-13]
+	_ = x[RBrace-14]
+	_ = x[Atmark-15]
+	_ = x[Math-16]
+	_ = x[Comma-17]
+	_ = x[Colon-18]
+	_ = x[Asmt-19]
+	_ = x[Cmp-20]
+	_ = x[Unknown-21]
 }
 
-const _TokenType_name = "EOLIdenLiteralDirectionSpecDefaultIfSwitchLParenRParenLCurlyRCurlyLBraceRBraceAtmarkMathCommaColonAsmtCmpUnknown"
+const _TokenType_name = "EOLIdenLiteralDirectionSpecDefaultIfElseSwitchLParenRParenLCurlyRCurlyLBraceRBraceAtmarkMathCommaColonAsmtCmpUnknown"
 
-var _TokenType_index = [...]uint8{0, 3, 7, 14, 23, 27, 34, 36, 42, 48, 54, 60, 66, 72, 78, 84, 88, 93, 98, 102, 105, 112}
+var _TokenType_index = [...]uint8{0, 3, 7, 14, 23, 27, 34, 36, 40, 46, 52, 58, 64, 70, 76, 82, 88, 92, 97, 102, 106, 109, 116}
 
 func (i TokenType) String() string {
 	if i < 0 || i >= TokenType(len(_TokenType_index)-1) {
