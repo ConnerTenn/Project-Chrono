@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"os"
 
-	AST "github.com/ConnerTenn/Project-Chrono/AST"
 	L "github.com/ConnerTenn/Project-Chrono/Lexer"
 	P "github.com/ConnerTenn/Project-Chrono/Parser"
 )
@@ -48,5 +47,8 @@ func main() {
 	// doing this sync for now
 	tree := P.Parse(&lex)
 
-	AST.PrintAST(tree)
+	for _, elem := range tree {
+		fmt.Print(elem)
+		fmt.Println()
+	}
 }

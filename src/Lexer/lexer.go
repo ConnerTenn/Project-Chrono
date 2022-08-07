@@ -18,6 +18,7 @@ const (
 	Spec                // Wire / Reg / Param, specifier for 'variables'
 	Default             // Default case
 	If
+	Else
 	Switch
 	LParen
 	RParen
@@ -54,6 +55,7 @@ var tokenMap = map[string]TokenType{
 	"reg":     Spec,
 	"var":     Spec,
 	"if":      If,
+	"else":    Else,
 	"switch":  Switch,
 	"default": Default,
 	",":       Comma,
@@ -72,7 +74,9 @@ var tokenMap = map[string]TokenType{
 	"+":       Math,
 	"<<":      Math,
 	">>":      Math,
+	"!":       Math,
 	"=":       Asmt,
+	"<-":      Asmt,
 	"==":      Cmp,
 	">=":      Cmp,
 	"<=":      Cmp,
@@ -136,6 +140,11 @@ func multiToken(first rune, next rune) bool {
 
 	//Check if this is a valid Comparison multi token
 	if checkCmp(first) && checkCmp(next) {
+		return true
+	}
+
+	//Check reg assigment
+	if first == '<' && next == '-' {
 		return true
 	}
 
