@@ -13,7 +13,7 @@ func Parse(lex *L.Lexer) []AST.AST {
 
 	for lex.NextExists() {
 		// dispatches to top level declarations
-		curToken, _ := lex.GetNext()
+		curToken := lex.GetNext()
 		//nextToken, _ := lex.PeekNext()
 
 		// FIXME: assume module
@@ -28,19 +28,19 @@ func parseModule(lex *L.Lexer, t L.Token) AST.ModuleDecl {
 	newModule := AST.ModuleDecl{}
 
 	newModule.Name = parseIdent(t)
-	t, _ = lex.GetNext()
+	t = lex.GetNext()
 
 	// TODO : Add BadExpr
 	displayAndCheckError("Did not find LParen to open module parameters", t, L.LParen)
 
 	// build parameters
-	t, _ = lex.GetNext() // drop LParen
+	t = lex.GetNext() // drop LParen
 	for t.Type != L.RParen {
 		newModule.Params = append(newModule.Params, parseParam(lex, t))
 
-		t, _ = lex.GetNext() // get next
+		t = lex.GetNext() // get next
 		if t.Type == L.Comma {
-			t, _ = lex.GetNext() // drop comma
+			t = lex.GetNext() // drop comma
 		}
 	}
 
@@ -67,7 +67,7 @@ func parseParam(lex *L.Lexer, t L.Token) AST.ParamDecl {
 
 	// set / get param type
 	if lex.ExpectNext(L.Spec) {
-		t, _ = lex.GetNext()
+		t = lex.GetNext()
 		curParam.Type = AST.Wire
 		switch t.Value {
 		case "reg":
@@ -78,29 +78,29 @@ func parseParam(lex *L.Lexer, t L.Token) AST.ParamDecl {
 	// set / get bit width
 	if lex.ExpectNext(L.LBrace) {
 		lex.GetNext()
-		t, _ = lex.GetNext()
+		t = lex.GetNext()
 
 		displayAndCheckError("Bit width specifier not found", t, L.Literal)
 
 		curParam.Width, _ = strconv.Atoi(t.Value)
 
-		t, _ = lex.GetNext()
+		t = lex.GetNext()
 
 		displayAndCheckError("Bit width closing brace not found", t, L.RBrace)
 	}
 
 	// get / set name
-	t, _ = lex.GetNext()
+	t = lex.GetNext()
 
 	curParam.Name = parseIdent(t)
 
 	// check if tied to a clock
 	if lex.ExpectNext(L.Atmark) {
 		// drop Atmark
-		_, _ = lex.GetNext()
+		_ = lex.GetNext()
 
 		// get clock info
-		t, _ = lex.GetNext()
+		t = lex.GetNext()
 
 		displayAndCheckError("Clock Declaration Incorrect", t, L.Iden, L.Math)
 		if t.Type == L.Math && t.Value != "!" {
@@ -108,7 +108,7 @@ func parseParam(lex *L.Lexer, t L.Token) AST.ParamDecl {
 		} else if t.Type == L.Math {
 			curParam.Clock.Neg = true
 
-			t, _ = lex.GetNext()
+			t = lex.GetNext()
 		}
 
 		displayAndCheckError("Clock Declaration Incorrect", t, L.Iden)
@@ -125,19 +125,19 @@ func parseIdent(t L.Token) AST.Ident {
 }
 
 func parseBlock(lex *L.Lexer) AST.BlockStmt {
-	t, _ := lex.GetNext() //Consume LCurly
+	t := lex.GetNext() //Consume LCurly
 	displayAndCheckError("Block Statement improperly started", t, L.LCurly)
 
 	blk := AST.BlockStmt{StartPos: t.Pos}
 
-	t, _ = lex.PeekNext()
+	t = lex.PeekNext()
 
 	//Run until end of block
 	for t.Type != L.RCurly {
 		//FIXME : Assuming blocks contain only statements
 		blk.StmtList = append(blk.StmtList, parseStatement(lex))
 
-		t, _ = lex.PeekNext()
+		t = lex.PeekNext()
 	}
 	displayAndCheckError("Block Statement improperly terminated", t, L.RCurly)
 	lex.GetNext() //Consume RCurly
@@ -148,16 +148,16 @@ func parseBlock(lex *L.Lexer) AST.BlockStmt {
 
 //FIXME : Definitely a lot to be added here
 func parseStatement(lex *L.Lexer) AST.Stmt {
-	next, _ := lex.PeekNext()
+	next := lex.PeekNext()
 	displayAndCheckError("Invalid beginning of a statement", next, L.Iden, L.If, L.LCurly)
 
 	switch next.Type {
 	case L.Iden:
 		{
 			//FIXME: Assume expression is an assignment
-			lhs, _ := lex.GetNext()
+			lhs := lex.GetNext()
 
-			asmt, _ := lex.GetNext()
+			asmt := lex.GetNext()
 			displayAndCheckError("Expected assignment statement", asmt, L.Asmt)
 
 			op := AST.Asmt
@@ -174,7 +174,7 @@ func parseStatement(lex *L.Lexer) AST.Stmt {
 	case L.If:
 		{
 			//Consume if
-			ifToken, _ := lex.GetNext()
+			ifToken := lex.GetNext()
 
 			cond := ParseExpression(lex)
 
@@ -189,8 +189,8 @@ func parseStatement(lex *L.Lexer) AST.Stmt {
 
 			if lex.ExpectNext(L.Else) {
 				// drop else
-				_, _ = lex.GetNext()
-				t, _ := lex.PeekNext()
+				_ = lex.GetNext()
+				t := lex.PeekNext()
 
 				displayAndCheckError("else cannot be an arbitrary statement", t, L.If, L.LCurly)
 
@@ -243,7 +243,7 @@ func ParseExpression(lex *L.Lexer) AST.Expr {
 	var opStack []L.Token
 
 	expectNext := true
-	t, _ := lex.GetNext()
+	t := lex.GetNext()
 	for expectNext {
 		expectNext = false
 
@@ -296,7 +296,7 @@ func ParseExpression(lex *L.Lexer) AST.Expr {
 
 		if !expectNext {
 			//Check the next token to see if a new operator exists to continue the expression
-			n, _ := lex.PeekNext()
+			n := lex.PeekNext()
 			if n.Type == L.Math || n.Type == L.Cmp || n.Type == L.RParen {
 				expectNext = true
 			}
@@ -304,7 +304,7 @@ func ParseExpression(lex *L.Lexer) AST.Expr {
 
 		//Collect the next token if required
 		if expectNext {
-			t, _ = lex.GetNext()
+			t = lex.GetNext()
 		}
 	}
 

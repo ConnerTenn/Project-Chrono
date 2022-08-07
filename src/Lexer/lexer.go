@@ -101,22 +101,21 @@ func NewLexer(fileName string) (Lexer, error) {
 }
 
 // provide an interface over the PeekableQueue so it doesn't have to be directly exported
-func (lex *Lexer) GetNext() (Token, bool) {
+func (lex *Lexer) GetNext() Token {
 	return lex.tokens.GetNext()
 }
 
-func (lex *Lexer) PeekNext() (Token, bool) {
+func (lex *Lexer) PeekNext() Token {
 	return lex.tokens.PeekNext()
 }
 
 func (lex *Lexer) ExpectNext(t TokenType) bool {
-	nextToken, ok := lex.PeekNext()
-	return ok && nextToken.Type == t
+	nextToken := lex.PeekNext()
+	return nextToken.Type == t
 }
 
 func (lex *Lexer) NextExists() bool {
-	_, ok := lex.PeekNext()
-	return ok
+	return !lex.tokens.IsEmpty()
 }
 
 func multiToken(first rune, next rune) bool {
