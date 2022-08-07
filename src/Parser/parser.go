@@ -90,6 +90,8 @@ func parseParam(lex *L.Lexer, t L.Token) AST.ParamDecl {
 		// drop Atmark
 		_ = lex.GetNext()
 
+		curParam.Clock = &AST.ClockDecl{}
+
 		// get clock info
 		t = lex.GetNext()
 

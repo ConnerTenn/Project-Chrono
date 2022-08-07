@@ -290,8 +290,7 @@ type (
 	SignalDecl struct {
 		Name  Ident
 		Width int
-		Type  SignalType
-		Clock ClockDecl
+		Clock *ClockDecl
 	}
 
 	ParamDecl struct { //Extends SignalDecl
@@ -313,15 +312,6 @@ const (
 	In ParamDir = iota
 	Out
 	Inout
-)
-
-//go:generate stringer -type=SignalType
-type SignalType int
-
-const (
-	Wire SignalType = iota //Default
-	Reg
-	//Var?
 )
 
 func (d ValueDecl) GetPos() [2]int  { return d.Name.GetPos() }
@@ -350,13 +340,14 @@ func (d ClockDecl) String() string {
 
 func (d SignalDecl) String() string {
 	var str string
-	str += d.Type.String() + " "
 	if d.Width > 1 {
 		str += "[" + fmt.Sprint(d.Width) + "] "
 	}
 	str += d.Name.Name
 
-	str += d.Clock.String()
+	if d.Clock != nil {
+		str += d.Clock.String()
+	}
 
 	return str
 }
