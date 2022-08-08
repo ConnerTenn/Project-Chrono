@@ -32,11 +32,14 @@ func closeFile() {
 	outfile.Close()
 }
 
-func emitModuleDecl(mod AST.ModuleDecl) {
+func emitModuleDecl(mod AST.ModuleDecl, scope *VariableScope) {
+	scope.EnterScope()
 	writeToFile("\nmodule " + mod.Name.Name + " (\n")
 
 	//Write parameters
 	for i, param := range mod.Params {
+		scope.DeclVariable(param.SignalDecl)
+
 		str := Indent(1)
 		//Dir
 		switch param.Dir {
@@ -65,12 +68,14 @@ func emitModuleDecl(mod AST.ModuleDecl) {
 	}
 	writeToFile(");\n")
 
-	emitBlock(mod.Block, 0, false)
+	emitBlock(mod.Block, 0, false, scope)
 
 	writeToFile("endmodule\n")
+	scope.ExitScope()
 }
 
-func emitBlock(blk AST.BlockStmt, ident int, surround bool) {
+func emitBlock(blk AST.BlockStmt, ident int, surround bool, scope *VariableScope) {
+	scope.EnterScope()
 	if surround {
 		writeToFile(Indent(ident) + "begin\n")
 	}
@@ -78,16 +83,21 @@ func emitBlock(blk AST.BlockStmt, ident int, surround bool) {
 	//Write each statement
 	str := ""
 	for _, stmt := range blk.StmtList {
-		emitStatement(stmt, ident+1)
+		emitStatement(stmt, ident+1, scope)
 	}
 	writeToFile(str)
 
 	if surround {
 		writeToFile(Indent(ident) + "end\n")
 	}
+	scope.ExitScope()
 }
 
-func emitStatement(stmt AST.Stmt, ident int) {
+func emitStatement(stmt AST.Stmt, ident int, scope *VariableScope) {
+	switch obj := stmt.(type) {
+	case *AST.DeclStmt:
+		scope.DeclVariable(*(obj.Decl.(*AST.SignalDecl)))
+	}
 }
 
 func GenerateVerilog(ast []AST.AST) {
@@ -98,7 +108,7 @@ func GenerateVerilog(ast []AST.AST) {
 		switch obj := elem.(type) {
 		case AST.ModuleDecl:
 			fmt.Println("BlockStmt")
-			emitModuleDecl(obj)
+			emitModuleDecl(obj, &VariableScope{})
 		default:
 			displayError("Unexpected AST element: " + fmt.Sprint(reflect.TypeOf(elem)))
 		}

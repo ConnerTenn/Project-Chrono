@@ -229,6 +229,13 @@ func Indent(level int) string {
 }
 
 func (s *BadStmt) String(indent int) string { return "BAD STATEMENT" }
+func (s *DeclStmt) String(indent int) string {
+	var str string
+
+	str += Indent(indent)
+	str += fmt.Sprint(s.Decl)
+	return str
+}
 func (s AssignStmt) String(indent int) string {
 	var str string
 
@@ -315,13 +322,13 @@ const (
 )
 
 func (d ValueDecl) GetPos() [2]int  { return d.Name.GetPos() }
+func (d SignalDecl) GetPos() [2]int { return d.Name.GetPos() }
 func (d ModuleDecl) GetPos() [2]int { return d.Name.GetPos() }
-func (d ClockDecl) GetPos() [2]int  { return d.Name.GetPos() }
 
 func (*ValueDecl) declNode()  {}
+func (*SignalDecl) declNode() {}
 func (*ParamDecl) declNode()  {}
 func (*ModuleDecl) declNode() {}
-func (*ClockDecl) declNode()  {}
 
 func (d ClockDecl) String() string {
 	var str string
