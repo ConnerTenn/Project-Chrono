@@ -31,7 +31,7 @@ func displayError(context string, recievedToken L.Token, expected ...L.TokenType
 
 func displayAndCheckError(context string, recievedToken L.Token, expected ...L.TokenType) {
 	for _, token := range expected {
-		if recievedToken.Type == token {
+		if recievedToken.GetType() == token {
 			return
 		}
 	}

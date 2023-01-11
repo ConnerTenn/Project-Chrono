@@ -36,14 +36,144 @@ const (
 )
 
 type Token struct {
-	Type  TokenType
+	// Type  TokenType
 	Value string // store the direct value
 	Pos   [2]int // store the position for error reporting
 }
 
 // stringer interface
 func (t Token) String() string {
-	return fmt.Sprintf("%v: %s at %d:%d", t.Type, t.Value, t.Pos[0], t.Pos[1])
+	return fmt.Sprintf("%v at %d:%d", t.Value, t.Pos[0], t.Pos[1])
+}
+
+func (t Token) Is(str string) bool {
+	return t.Value == str
+}
+
+//Not including keywords
+func (t Token) IsIden() bool {
+	if t.IsKeyword() {
+		return false
+	}
+	if (t.Value[0] >= 'A' && t.Value[0] <= 'Z') || (t.Value[0] >= 'a' && t.Value[0] <= 'z') {
+		return true
+	}
+	return false
+}
+
+func (t Token) IsLiteral() bool {
+	if t.Value[0] >= '0' && t.Value[0] <= '9' {
+		return true
+	}
+	return false
+}
+
+func (t Token) IsMath() bool {
+	switch t.Value {
+	case "+", "-", "*", "/":
+		return true
+	}
+	return false
+}
+
+func (t Token) IsLogical() bool {
+	switch t.Value {
+	case "!", "&&", "||":
+		return true
+	}
+	return false
+}
+
+func (t Token) IsBitwise() bool {
+	switch t.Value {
+	case "~", "&", "|", ">>", "<<":
+		return true
+	}
+	return false
+}
+
+func (t Token) IsComparison() bool {
+	switch t.Value {
+	case "==", "<", ">", "<=":
+		return true
+	}
+	return false
+}
+
+func (t Token) IsOperator() bool {
+	return t.IsMath() || t.IsLogical() || t.IsBitwise() || t.IsComparison()
+}
+
+func (t Token) IsLParen() bool {
+	return t.Value == "("
+}
+func (t Token) IsRParen() bool {
+	return t.Value == ")"
+}
+func (t Token) IsParen() bool {
+	return t.IsLParen() || t.IsRParen()
+}
+
+func (t Token) IsLBracket() bool {
+	return t.Value == "["
+}
+func (t Token) IsRBracket() bool {
+	return t.Value == "]"
+}
+func (t Token) IsBrace() bool {
+	return t.IsLBracket() || t.IsRBracket()
+}
+
+func (t Token) IsLCurly() bool {
+	return t.Value == "{"
+}
+func (t Token) IsRCurly() bool {
+	return t.Value == "}"
+}
+func (t Token) IsCurly() bool {
+	return t.IsLCurly() || t.IsRCurly()
+}
+
+func (t Token) IsAssignment() bool {
+	switch t.Value {
+	case "=", "<-":
+		return true
+	}
+	return false
+}
+
+func (t Token) IsKeyword() bool {
+	switch t.Value {
+	case "sig", "in", "out", "inout", "if", "else":
+		return true
+	}
+	return false
+}
+
+func (t Token) IsSpec() bool {
+	switch t.Value {
+	case "in", "out", "inout":
+		return true
+	}
+	return false
+}
+
+func (t Token) IsEOL() bool {
+	switch t.Value {
+	case ";", "\n":
+		return true
+	}
+	return false
+}
+
+func (t Token) GetType() TokenType {
+	if t.IsIden() {
+		return Iden
+	}
+	if t.IsLiteral() && !t.IsKeyword() {
+		return Literal
+	}
+	return tokenMap[t.Value]
 }
 
 // keyword list
@@ -101,22 +231,30 @@ func NewLexer(fileName string) (Lexer, error) {
 }
 
 // provide an interface over the PeekableQueue so it doesn't have to be directly exported
-func (lex *Lexer) GetNext() (Token, bool) {
+func (lex *Lexer) GetNext() Token {
 	return lex.tokens.GetNext()
 }
 
-func (lex *Lexer) PeekNext() (Token, bool) {
+func (lex *Lexer) PeekNext() Token {
 	return lex.tokens.PeekNext()
 }
 
-func (lex *Lexer) ExpectNext(t TokenType) bool {
-	nextToken, ok := lex.PeekNext()
-	return ok && nextToken.Type == t
+// func (lex *Lexer) ExpectNext(t TokenType) bool {
+// 	nextToken := lex.PeekNext()
+// 	return nextToken.Type == t
+// }
+func (lex *Lexer) ExpectNextType(test func(Token) bool) bool {
+	nextToken := lex.PeekNext()
+	return test(nextToken)
+}
+
+func (lex *Lexer) ExpectNext(str string) bool {
+	nextToken := lex.PeekNext()
+	return nextToken.Is(str)
 }
 
 func (lex *Lexer) NextExists() bool {
-	_, ok := lex.PeekNext()
-	return ok
+	return !lex.tokens.IsEmpty()
 }
 
 func multiToken(first rune, next rune) bool {
@@ -159,11 +297,10 @@ func (lex Lexer) Tokenizer() {
 
 	pos := [2]int{1, 1} // position / head tracker for error reporting
 
-	for true {
+	for {
 		var (
-			charAdd int       = 1
-			val     string    = ""
-			t       TokenType = Unknown
+			charAdd int    = 1
+			val     string = ""
 
 			nextRune  rune
 			firstRune rune
@@ -194,21 +331,6 @@ func (lex Lexer) Tokenizer() {
 			nextRune = rune(nextVal[0])
 		}
 
-		// keywords tokenizing
-		if keyType, ok := tokenMap[val]; ok { // if val is in keyword map
-			t = keyType
-		}
-
-		// iden tokenizing
-		if ((val[0] >= 'A' && val[0] <= 'Z') || (val[0] >= 'a' && val[0] <= 'z')) && t == Unknown {
-			t = Iden
-		}
-
-		// literals tokenizing
-		if val[0] >= '0' && val[0] <= '9' {
-			t = Literal
-		}
-
 		// single & multi char tokenizing
 		switch val {
 		case " ":
@@ -226,7 +348,7 @@ func (lex Lexer) Tokenizer() {
 			continue // ignore carriage returns (don't need to count for position tracking, always bundled with new line)
 		}
 
-		lex.tokens.PushBack(Token{t, val, pos})
+		lex.tokens.PushBack(Token{val, pos})
 		pos[1] += charAdd
 	}
 }

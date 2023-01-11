@@ -229,6 +229,13 @@ func Indent(level int) string {
 }
 
 func (s *BadStmt) String(indent int) string { return "BAD STATEMENT" }
+func (s *DeclStmt) String(indent int) string {
+	var str string
+
+	str += Indent(indent)
+	str += fmt.Sprint(s.Decl)
+	return str
+}
 func (s AssignStmt) String(indent int) string {
 	var str string
 
@@ -290,8 +297,7 @@ type (
 	SignalDecl struct {
 		Name  Ident
 		Width int
-		Type  SignalType
-		Clock ClockDecl
+		Clock *ClockDecl
 	}
 
 	ParamDecl struct { //Extends SignalDecl
@@ -315,23 +321,14 @@ const (
 	Inout
 )
 
-//go:generate stringer -type=SignalType
-type SignalType int
-
-const (
-	Wire SignalType = iota //Default
-	Reg
-	//Var?
-)
-
 func (d ValueDecl) GetPos() [2]int  { return d.Name.GetPos() }
+func (d SignalDecl) GetPos() [2]int { return d.Name.GetPos() }
 func (d ModuleDecl) GetPos() [2]int { return d.Name.GetPos() }
-func (d ClockDecl) GetPos() [2]int  { return d.Name.GetPos() }
 
 func (*ValueDecl) declNode()  {}
+func (*SignalDecl) declNode() {}
 func (*ParamDecl) declNode()  {}
 func (*ModuleDecl) declNode() {}
-func (*ClockDecl) declNode()  {}
 
 func (d ClockDecl) String() string {
 	var str string
@@ -350,13 +347,14 @@ func (d ClockDecl) String() string {
 
 func (d SignalDecl) String() string {
 	var str string
-	str += d.Type.String() + " "
 	if d.Width > 1 {
 		str += "[" + fmt.Sprint(d.Width) + "] "
 	}
 	str += d.Name.Name
 
-	str += d.Clock.String()
+	if d.Clock != nil {
+		str += d.Clock.String()
+	}
 
 	return str
 }
